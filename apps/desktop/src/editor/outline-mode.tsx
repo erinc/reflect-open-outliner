@@ -1,7 +1,13 @@
 import { useMemo } from 'react'
 import { definePlugin } from '@prosekit/core'
 import type { ProseMirrorNode } from '@prosekit/pm/model'
-import { Plugin, type Command, type EditorState, type Transaction } from '@prosekit/pm/state'
+import {
+  Plugin,
+  Selection,
+  type Command,
+  type EditorState,
+  type Transaction,
+} from '@prosekit/pm/state'
 import { Priority } from '@meowdown/core'
 import { useExtension, useKeymap } from '@meowdown/react'
 
@@ -112,12 +118,17 @@ export function normalizeOutlineTransaction(
   return transaction.docChanged ? transaction : null
 }
 
-function nearestList(state: EditorState): ProseMirrorNode | null {
+interface ListContext {
+  readonly depth: number
+  readonly node: ProseMirrorNode
+}
+
+function nearestListContext(state: EditorState): ListContext | null {
   const { $from } = state.selection
   for (let depth = $from.depth; depth > 0; depth -= 1) {
     const node = $from.node(depth)
     if (node.type.name === 'list') {
-      return node
+      return { depth, node }
     }
   }
   return null
@@ -125,32 +136,75 @@ function nearestList(state: EditorState): ProseMirrorNode | null {
 
 /** Whether the selection is inside an item of `kind`. */
 export function isSelectionInListKind(state: EditorState, kind: string): boolean {
-  return nearestList(state)?.attrs['kind'] === kind
+  return nearestListContext(state)?.node.attrs['kind'] === kind
+}
+
+/**
+ * Whether the selected item has a preceding sibling at the same depth.
+ *
+ * That sibling is the only structurally valid parent for one indent step.
+ * Once indented, the item is the parent's first child and cannot indent again
+ * until another sibling precedes it at that depth.
+ */
+export function canStrictIndent(state: EditorState): boolean {
+  const context = nearestListContext(state)
+  if (context === null) {
+    return false
+  }
+  const parentDepth = context.depth - 1
+  const index = state.selection.$from.index(parentDepth)
+  const previousSibling =
+    index > 0 ? state.selection.$from.node(parentDepth).child(index - 1) : null
+  return previousSibling?.type.name === 'list'
 }
 
 function isSelectionInRootItem(state: EditorState): boolean {
-  const { $from } = state.selection
-  for (let depth = $from.depth; depth > 0; depth -= 1) {
-    const node = $from.node(depth)
-    if (node.type.name !== 'list') {
-      continue
-    }
-    return $from.node(depth - 1).type.name === 'doc'
+  const context = nearestListContext(state)
+  return (
+    context !== null &&
+    state.selection.$from.node(context.depth - 1).type.name === 'doc'
+  )
+}
+
+const deleteEmptyOutlineItem: Command = (state, dispatch) => {
+  const context = nearestListContext(state)
+  if (
+    !state.selection.empty ||
+    context === null ||
+    !isEmptyOutlineItem(context.node)
+  ) {
+    return false
   }
-  return false
+
+  const from = state.selection.$from.before(context.depth)
+  const previousSelection = Selection.findFrom(state.doc.resolve(from), -1)
+  if (previousSelection === null) {
+    return true
+  }
+
+  if (dispatch !== undefined) {
+    const to = state.selection.$from.after(context.depth)
+    const transaction = state.tr.delete(from, to)
+    const boundary = transaction.mapping.map(from)
+    const selection = Selection.near(transaction.doc.resolve(boundary), -1)
+    dispatch(transaction.setSelection(selection).scrollIntoView())
+  }
+  return true
 }
 
 const protectEmptyRootItem: Command = (state) => {
-  const item = nearestList(state)
+  const item = nearestListContext(state)?.node
   return (
     state.selection.empty &&
-    item !== null &&
+    item !== undefined &&
     isSelectionInRootItem(state) &&
     isEmptyOutlineItem(item)
   )
 }
 
 const protectRootOutdent: Command = (state) => isSelectionInRootItem(state)
+const protectInvalidIndent: Command = (state) =>
+  nearestListContext(state) !== null && !canStrictIndent(state)
 
 function protectListKind(kind: string): Command {
   return (state) => isSelectionInListKind(state, kind)
@@ -175,9 +229,12 @@ export function OutlineMode({ allowTitle }: OutlineModeProps): null {
   )
   const keymap = useMemo(
     () => ({
+      Backspace: deleteEmptyOutlineItem,
       Enter: protectEmptyRootItem,
+      Tab: protectInvalidIndent,
       'Shift-Tab': protectRootOutdent,
       'Mod-[': protectRootOutdent,
+      'Mod-]': protectInvalidIndent,
       'Mod-Shift-7': protectListKind('ordered'),
       'Mod-Shift-8': protectListKind('bullet'),
       'Mod-Shift-9': protectListKind('task'),

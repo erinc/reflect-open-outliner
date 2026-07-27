@@ -46,6 +46,28 @@ describe('NoteEditor outline mode', () => {
     })
   })
 
+  it('deletes an empty item and moves the caret to the previous item end', async () => {
+    const handle = await renderOutline('- first')
+
+    await userEvent.keyboard('{Enter}{Backspace}!')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- first!\n')
+    })
+  })
+
+  it('deletes a cleared first child and moves the caret to its parent end', async () => {
+    const handle = await renderOutline('- parent\n  - child')
+
+    await userEvent.keyboard(
+      '{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}!',
+    )
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- parent!\n')
+    })
+  })
+
   it('outdents a nested empty item instead of creating an empty line', async () => {
     const handle = await renderOutline('- parent\n  - child')
 
@@ -53,6 +75,16 @@ describe('NoteEditor outline mode', () => {
 
     await vi.waitFor(() => {
       expect(handle.getMarkdown()).toBe('- parent\n  - child\n- next\n')
+    })
+  })
+
+  it('allows only one indent beneath the preceding parent', async () => {
+    const handle = await renderOutline('- parent\n- child')
+
+    await userEvent.keyboard('{Tab}{Tab}')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- parent\n  - child\n')
     })
   })
 

@@ -9,7 +9,7 @@ import {
   type FormattingToolbarCommands,
   type FormattingTriggerText,
 } from './formatting-toolbar-store'
-import { isSelectionInListKind } from './outline-mode'
+import { canStrictIndent, isSelectionInListKind } from './outline-mode'
 
 interface FormattingToolbarBridgeProps {
   readonly outlineMode: boolean
@@ -60,7 +60,9 @@ export function FormattingToolbarBridge({
 
       function readCapabilities(): FormattingToolbarCapabilities {
         return {
-          canIndent: editor.commands.indentList.canExec(),
+          canIndent:
+            (!outlineMode || canStrictIndent(editor.state)) &&
+            editor.commands.indentList.canExec(),
           canDedent: editor.commands.dedentList.canExec(),
           canMoveUp: editor.commands.moveList.canExec('up'),
           canMoveDown: editor.commands.moveList.canExec('down'),
@@ -85,7 +87,13 @@ export function FormattingToolbarBridge({
             editor.commands.toggleList({ kind: 'bullet' })
           }),
         cycleCheckableList: () => run(() => editor.commands.cycleCheckableList()),
-        indent: () => run(() => editor.commands.indentList()),
+        indent: () =>
+          run(() => {
+            if (outlineMode && !canStrictIndent(editor.state)) {
+              return
+            }
+            editor.commands.indentList()
+          }),
         dedent: () => run(() => editor.commands.dedentList()),
         moveUp: () => run(() => editor.commands.moveList('up')),
         moveDown: () => run(() => editor.commands.moveList('down')),

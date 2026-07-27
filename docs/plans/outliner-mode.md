@@ -16,10 +16,15 @@ the editor.
 ## Product contract
 
 - Enter in a non-empty item creates a sibling at the same depth.
-- Tab indents an item beneath its previous sibling.
+- Tab indents an item one level beneath its previous sibling. It is a no-op
+  when no sibling precedes the item at its current depth, preventing repeated
+  indentation beneath the same parent.
 - Shift-Tab outdents an item, but never unwraps a root item into a paragraph.
 - Enter in an empty nested item outdents it.
 - Enter in an empty root item is a no-op.
+- Backspace in an empty item removes it and moves the caret to the end of the
+  previous visible item. The first root item remains as the active typing
+  target when no previous item exists.
 - An empty item may exist only as the active typing target. Empty items that the
   caret leaves are removed and are never persisted as blank content.
 - Import, paste, templates, AI replacements, attachments, block-handle actions,

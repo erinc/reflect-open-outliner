@@ -142,6 +142,24 @@ describe('FormattingToolbarBridge', () => {
     })
   })
 
+  it('allows only one toolbar indent beneath the preceding outline item', async () => {
+    const { handle } = await setupEditor('- alpha\n- beta', true, true)
+
+    await pmRoot.getByText('beta').click()
+    await expect.element(toolbarState).toHaveTextContent('has-toolbar')
+
+    captured.toolbar?.commands.indent()
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- alpha\n  - beta\n')
+      expect(captured.toolbar?.capabilities.canIndent).toBe(false)
+    })
+
+    captured.toolbar?.commands.indent()
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- alpha\n  - beta\n')
+    })
+  })
+
   it('restructures a list with indent, dedent, and move commands', async () => {
     const { handle } = await setupEditor('- alpha\n- beta')
 

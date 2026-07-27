@@ -3,6 +3,7 @@ import { docToMarkdown, markdownToDoc } from '@meowdown/core'
 import type { ProseMirrorNode } from '@prosekit/pm/model'
 import { EditorState, TextSelection } from '@prosekit/pm/state'
 import {
+  canStrictIndent,
   isSelectionInListKind,
   normalizeOutlineTransaction,
 } from './outline-mode'
@@ -110,5 +111,29 @@ describe('isSelectionInListKind', () => {
 
     expect(isSelectionInListKind(state, 'ordered')).toBe(true)
     expect(isSelectionInListKind(state, 'bullet')).toBe(false)
+  })
+})
+
+describe('canStrictIndent', () => {
+  function stateAt(markdown: string, text: string): EditorState {
+    const doc = markdownToDoc(markdown)
+    return EditorState.create({
+      doc,
+      selection: TextSelection.create(doc, textPosition(doc, text)),
+    })
+  }
+
+  it('allows one indent beneath a preceding sibling', () => {
+    expect(canStrictIndent(stateAt('- parent\n- child', 'child'))).toBe(true)
+  })
+
+  it('rejects another indent when the item is already the first child', () => {
+    expect(canStrictIndent(stateAt('- parent\n  - child', 'child'))).toBe(false)
+  })
+
+  it('allows a deeper indent when a real sibling precedes the item', () => {
+    expect(
+      canStrictIndent(stateAt('- parent\n  - first\n  - second', 'second')),
+    ).toBe(true)
   })
 })
