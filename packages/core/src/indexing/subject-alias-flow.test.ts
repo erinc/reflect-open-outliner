@@ -229,7 +229,10 @@ describe('v1 subject alias flow', () => {
         dateSuggestions.map(({ path, insertText }) => ({ path, insertText })),
       ).toEqual([
         { path: 'daily/2026-07-10.md', insertText: '2026-07-10' },
-        { path: 'notes/date-title.md', insertText: 'notes/date-title' },
+        {
+          path: 'notes/date-title.md',
+          insertText: 'notes/date-title|2026-07-10',
+        },
       ])
       const { suggestions: fuzzyDateSuggestions } =
         await suggestWikiLinkTargets('today', 8, dateContext)
@@ -262,14 +265,14 @@ describe('v1 subject alias flow', () => {
       expect(
         duplicateResult.suggestions.map(({ path, insertText }) => ({ path, insertText })),
       ).toEqual([
-        { path: 'notes/z-roadmap.md', insertText: 'notes/z-roadmap' },
-        { path: 'notes/a-roadmap.md', insertText: 'notes/a-roadmap' },
+        { path: 'notes/z-roadmap.md', insertText: 'notes/z-roadmap|Roadmap' },
+        { path: 'notes/a-roadmap.md', insertText: 'notes/a-roadmap|Roadmap' },
       ])
       const prefixResult = await suggestWikiLinkTargets('Road')
       expect(prefixResult.claimedTargetKeys).toEqual(['roadmap'])
       expect(prefixResult.suggestions.map((suggestion) => suggestion.insertText)).toEqual([
-        'notes/z-roadmap',
-        'notes/a-roadmap',
+        'notes/z-roadmap|Roadmap',
+        'notes/a-roadmap|Roadmap',
       ])
       const navigationSuggestions = await suggestWikiTargets('Roadmap')
       expect(navigationSuggestions.map((suggestion) => suggestion.path)).toEqual([
@@ -285,8 +288,8 @@ describe('v1 subject alias flow', () => {
       // The twins claim `ideas` through their filename stems too.
       expect(ideasResult.claimedTargetKeys).toEqual(['ideas', '🧠 ideas'])
       expect(ideasResult.suggestions.map((suggestion) => suggestion.insertText)).toEqual([
-        'notes/ideas-2',
-        'notes/ideas',
+        'notes/ideas-2|🧠 Ideas',
+        'notes/ideas|🧠 Ideas',
       ])
 
       // A duplicate date-shaped title cannot be addressed by name (that would
@@ -295,8 +298,8 @@ describe('v1 subject alias flow', () => {
       const dateTwinResult = await suggestWikiLinkTargets('2026-07-12')
       expect(dateTwinResult.claimedTargetKeys).toEqual(['2026-07-12'])
       expect(dateTwinResult.suggestions.map((suggestion) => suggestion.insertText)).toEqual([
-        'notes/z-date-twin',
-        'notes/a-date-twin',
+        'notes/z-date-twin|2026-07-12',
+        'notes/a-date-twin|2026-07-12',
       ])
       // A uniquely claimed date-shaped title stays addressable.
       const { suggestions: dateTitleSuggestions } =
@@ -331,7 +334,7 @@ describe('v1 subject alias flow', () => {
           alias: 'Second Shared',
           insertText: 'Second Shared',
         },
-        { path: 'notes/a-shared.md', insertText: 'notes/a-shared' },
+        { path: 'notes/a-shared.md', insertText: 'notes/a-shared|Shared' },
       ])
 
       const adaResult = await suggestWikiLinkTargets('Ada')

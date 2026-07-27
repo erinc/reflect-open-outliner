@@ -75,7 +75,10 @@ describe('rich title flow', () => {
       // the Create row.
       expect(result.suggestions).toMatchObject([
         { path: 'notes/plain.md', insertText: 'Meeting with Ada' },
-        { path: 'notes/meeting-with-ada.md', insertText: 'notes/meeting-with-ada' },
+        {
+          path: 'notes/meeting-with-ada.md',
+          insertText: 'notes/meeting-with-ada|Meeting with Ada',
+        },
       ])
       expect(result.claimedTargetKeys).toContain('meeting with ada')
       await expect(resolveWikiTarget('Meeting with Ada')).resolves.toEqual({
@@ -165,7 +168,10 @@ describe('path-address fallback flow', () => {
     connectIndex(database)
     try {
       const { suggestions } = await suggestWikiLinkTargets('plan')
-      expect(suggestions.map((row) => row.insertText).sort()).toEqual(['a/Plan', 'b/Plan'])
+      expect(suggestions.map((row) => row.insertText).sort()).toEqual([
+        'a/Plan|Plan',
+        'b/Plan|Plan',
+      ])
       await Promise.all(suggestions.map(expectSuggestionOpensItsPath))
     } finally {
       setBridge(null)
@@ -199,7 +205,7 @@ describe('path-address fallback flow', () => {
       // `#` reads as a fragment separator in every wiki consumer, so the
       // hash-named duplicate cannot be inserted; neither can the loose-slash
       // path; the clean sibling still can.
-      expect(suggestions.map((row) => row.insertText)).toEqual(['notes/plan'])
+      expect(suggestions.map((row) => row.insertText)).toEqual(['notes/plan|Plan'])
     } finally {
       setBridge(null)
       database.close()

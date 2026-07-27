@@ -316,10 +316,10 @@ async function winningAliasesByPath(
 
 /**
  * Last resort for a note whose every name is ambiguous or unserializable:
- * address it by its own path. `[[notes/plan-2]]` names exactly one file, so
- * the row stays selectable instead of vanishing, and the link the user writes
- * never needs disambiguating later. A root-level file gains a `/` so the
- * target reads as a path rather than a name.
+ * address it by its own path. `[[notes/plan-2|Plan]]` names exactly one file
+ * while keeping the note's name visible, so the row stays selectable instead
+ * of vanishing and the link never needs disambiguating later. A root-level
+ * file gains a `/` so the target reads as a path rather than a name.
  *
  * The address is proven by round trip: {@link wikiNoteReference} must reduce
  * the spelling back to exactly this file. A path with no such spelling — a
@@ -327,14 +327,17 @@ async function winningAliasesByPath(
  * stays reachable through search and Markdown hrefs but cannot be inserted
  * from the `[[` menu.
  */
-function pathQualifiedInsert(path: string): string | null {
+function pathQualifiedInsert(path: string, display: string): string | null {
   const target = path.replace(/\.md$/, '')
   const qualified = target.includes('/') ? target : `/${target}`
   const reduced = wikiNoteReference(qualified)
   if (reduced?.kind !== 'path' || reduced.path !== path) {
     return null
   }
-  return serializeWikiSuggestionAddress(qualified, null)
+  return (
+    serializeWikiSuggestionAddress(qualified, display) ??
+    serializeWikiSuggestionAddress(qualified, null)
+  )
 }
 
 async function verifyWikiSuggestionAddresses(
@@ -428,7 +431,10 @@ async function verifyWikiSuggestionAddresses(
           }
         }
         if (!rescued) {
-          const pathInsert = pathQualifiedInsert(candidate.path)
+          const pathInsert = pathQualifiedInsert(
+            candidate.path,
+            candidate.alias ?? candidate.target,
+          )
           if (pathInsert !== null) {
             verified.push({ ...candidate, insertText: pathInsert })
           }
