@@ -16,6 +16,8 @@
     "lint:react": "eslint .",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --config src-tauri/tauri.dev.conf.json",
+    "outliner:dev": "tauri dev --config src-tauri/tauri.outliner.conf.json",
+    "outliner:build": "tauri build --config src-tauri/tauri.outliner.conf.json --bundles app",
     "tauri:ios:dev": "tauri ios dev --config src-tauri/tauri.ios.dev.conf.json",
     "tauri:build:dev": "tauri build --config src-tauri/tauri.dev.conf.json",
     "tauri:build:beta": "tauri build --config src-tauri/tauri.beta.conf.json"

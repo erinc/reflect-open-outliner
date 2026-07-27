@@ -17,6 +17,8 @@
     "release:macos": "pnpm --filter @reflect/desktop release:macos",
     "release:testflight": "pnpm --filter @reflect/desktop release:ios testflight",
     "tauri:dev": "pnpm --filter @reflect/desktop tauri:dev",
+    "outliner:dev": "pnpm --filter @reflect/desktop outliner:dev",
+    "outliner:build": "pnpm --filter @reflect/desktop outliner:build",
     "tauri:ios:dev": "pnpm --filter @reflect/desktop tauri:ios:dev",
     "tauri:build:dev": "pnpm --filter @reflect/desktop tauri:build:dev",
     "tauri:build:beta": "pnpm --filter @reflect/desktop tauri:build:beta"

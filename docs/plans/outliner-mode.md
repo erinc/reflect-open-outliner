@@ -168,18 +168,38 @@ change is published.
 
 ## Running the foundation
 
-The first implementation slice is intentionally opt-in while migration and
-unsupported-Markdown handling are unfinished. Run the desktop development
-flavor with:
+The dedicated desktop flavor enables the outline invariant automatically and
+installs as **Reflect Outliner**, with the distinct bundle identifier
+`app.reflect.desktop.outliner`. Run it from source with:
 
 ```bash
-VITE_REFLECT_OUTLINER=1 pnpm tauri:dev
+pnpm outliner:dev
 ```
 
-Use a disposable or backed-up graph. With the flag enabled, editing an existing
-note can normalize its body into outline items and persist that Markdown. Daily
-notes outline the entire editor body; regular notes preserve their first H1 as
-the title. Omit the environment variable to run ordinary Reflect.
+Build a local macOS application bundle with:
+
+```bash
+pnpm outliner:build
+```
+
+The bundle is written to:
+
+```text
+target/release/bundle/macos/Reflect Outliner.app
+```
+
+Copy that application to `/Applications` to install it. Local builds are not
+notarized, so macOS may require right-clicking the app and choosing **Open** the
+first time.
+
+Use a disposable or backed-up graph. Editing an existing note can normalize its
+body into outline items and persist that Markdown. Daily notes outline the
+entire editor body; regular notes preserve their first H1 as the title.
+
+Reflect Outliner uses a distinct app identifier, window title, deep-link scheme,
+and fork-local no-op updater endpoint, so it can coexist with Reflect without
+being replaced by an original-author update. Graph files, settings, recent
+graphs, and keychain entries remain intentionally compatible with Reflect.
 
 This foundation includes the document invariant and core keyboard guards. It
 does not yet include persistent folding, block identity, focus/zoom, or the

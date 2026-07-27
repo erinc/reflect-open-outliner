@@ -310,7 +310,7 @@ pub async fn open_note_window(
     let cascade = cascade_offset(&app);
 
     let mut builder = WebviewWindowBuilder::new(&app, &label, WebviewUrl::default())
-        .title("Reflect")
+        .title(app.package_info().name.clone())
         .inner_size(1000.0, 650.0)
         // Match the main window: HTML5 drops must reach the webview (chat and
         // editor file drops), so the native drag-drop handler stays off.
