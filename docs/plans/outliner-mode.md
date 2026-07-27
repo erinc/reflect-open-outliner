@@ -185,9 +185,14 @@ previewable graph migration.
 This checkout uses:
 
 - `origin`: `git@github.com:erinc/reflect-open-outliner.git`
-- `upstream`: `git@github.com:team-reflect/reflect-open.git`
+- `upstream`: fetches `git@github.com:team-reflect/reflect-open.git`, with its
+  push URL disabled
 - `master`: a clean branch tracking `upstream/master`
 - `codex/outliner-*`: scoped implementation branches
+
+All outliner pull requests target `erinc/reflect-open-outliner:master`. Never
+push a branch or open an outliner pull request against
+`team-reflect/reflect-open`.
 
 Update the mirror and merge it into an outliner branch:
 
@@ -209,7 +214,8 @@ git config rerere.enabled true
 git config rerere.autoupdate true
 ```
 
-Upstream synchronization should arrive through a reviewed pull request with all
+Upstream synchronization should arrive through a reviewed pull request inside
+the outliner fork, targeting `erinc/reflect-open-outliner:master`, with all
 outliner tests. It must not auto-merge merely because Git reports no textual
 conflicts; editor semantics can regress in a clean merge.
 
