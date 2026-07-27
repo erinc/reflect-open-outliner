@@ -21,12 +21,13 @@ the editor.
   indentation beneath the same parent.
 - Shift-Tab outdents an item, but never unwraps a root item into a paragraph.
 - Enter in an empty nested item outdents it.
-- Enter in an empty root item is a no-op.
+- Enter in an empty root item keeps it as a blank bullet and creates another
+  empty root sibling for continued typing.
 - Backspace in an empty item removes it and moves the caret to the end of the
   previous visible item. The first root item remains as the active typing
   target when no previous item exists.
-- An empty item may exist only as the active typing target. Empty items that the
-  caret leaves are removed and are never persisted as blank content.
+- Empty outline items are durable bullet blocks. Empty plain paragraphs remain
+  invalid and are wrapped as bullets.
 - Import, paste, templates, AI replacements, attachments, block-handle actions,
   and programmatic insertion all pass through the same outline invariant.
 - Folding and movement operate on the selected item and its complete descendant
@@ -48,8 +49,9 @@ Markdown lists:
 - Sibling
 ```
 
-The editor may hold one transient empty list item for the caret, but empty items
-and paragraph-only gap blocks are not durable content.
+Empty list items are durable content and serialize as blank Markdown bullets.
+Paragraph-only gap blocks are never durable; the invariant wraps them as outline
+items.
 
 Block identity must be designed before persistent folding and zoom URLs ship.
 ProseMirror positions and text hashes are not durable identities: edits, moves,
@@ -102,7 +104,7 @@ saving.
 
 - Add an editor extension that wraps top-level body blocks as bullet items.
 - Preserve the first regular-note H1 as the title.
-- Remove unselected empty items and empty paragraph gap blocks.
+- Preserve empty bullet items and wrap empty paragraph gap blocks as bullets.
 - Prevent Enter and outdent from creating a root paragraph.
 - Prevent the bullet-format action from unwrapping a bullet.
 - Apply the invariant to initial content, external reloads, paste, templates,

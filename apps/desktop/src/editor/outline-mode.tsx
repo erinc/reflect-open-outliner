@@ -46,16 +46,13 @@ function titleIndex(doc: ProseMirrorNode, allowTitle: boolean): number | null {
   return null
 }
 
-function activeTopLevelIndex(state: EditorState): number | null {
-  return state.selection.empty ? state.selection.$from.index(0) : null
-}
-
 /**
  * Repair the top-level document shape after an editor transaction.
  *
- * The active empty block is kept as the caret's transient typing target.
- * Empty siblings are removed; every non-list body block is wrapped in a
- * canonical bullet item. The first regular-note H1 remains the title.
+ * Every non-list body block, including an empty block, is wrapped in a
+ * canonical bullet item. Empty outline items remain durable blocks, while
+ * plain empty paragraphs cannot escape the outline. The first regular-note H1
+ * remains the title.
  */
 export function normalizeOutlineTransaction(
   state: EditorState,
@@ -66,17 +63,12 @@ export function normalizeOutlineTransaction(
     return null
   }
 
-  const activeIndex = activeTopLevelIndex(state)
   const preservedTitleIndex = titleIndex(state.doc, allowTitle)
-  const actions: Array<
-    | { readonly kind: 'delete'; readonly from: number; readonly to: number }
-    | {
-        readonly kind: 'wrap'
-        readonly from: number
-        readonly to: number
-        readonly node: ProseMirrorNode
-      }
-  > = []
+  const actions: Array<{
+    readonly from: number
+    readonly to: number
+    readonly node: ProseMirrorNode
+  }> = []
 
   let position = 0
   for (let index = 0; index < state.doc.childCount; index += 1) {
@@ -86,17 +78,10 @@ export function normalizeOutlineTransaction(
     position = to
 
     if (index === preservedTitleIndex || node.type === listType) {
-      if (isEmptyOutlineItem(node) && index !== activeIndex) {
-        actions.push({ kind: 'delete', from, to })
-      }
       continue
     }
 
-    if (isEmptyTextblock(node) && index !== activeIndex) {
-      actions.push({ kind: 'delete', from, to })
-      continue
-    }
-    actions.push({ kind: 'wrap', from, to, node })
+    actions.push({ from, to, node })
   }
 
   if (actions.length === 0) {
@@ -105,10 +90,6 @@ export function normalizeOutlineTransaction(
 
   const transaction = state.tr
   for (const action of actions.reverse()) {
-    if (action.kind === 'delete') {
-      transaction.delete(action.from, action.to)
-      continue
-    }
     const item = listType.createChecked(
       { kind: 'bullet', collapsed: false },
       action.node,
@@ -192,14 +173,36 @@ const deleteEmptyOutlineItem: Command = (state, dispatch) => {
   return true
 }
 
-const protectEmptyRootItem: Command = (state) => {
-  const item = nearestListContext(state)?.node
-  return (
-    state.selection.empty &&
-    item !== undefined &&
-    isSelectionInRootItem(state) &&
-    isEmptyOutlineItem(item)
-  )
+const insertEmptyRootSibling: Command = (state, dispatch) => {
+  const context = nearestListContext(state)
+  if (context === null) {
+    return false
+  }
+  const firstBlock = context.node.firstChild
+  if (
+    !state.selection.empty ||
+    firstBlock === null ||
+    !isSelectionInRootItem(state) ||
+    !isEmptyOutlineItem(context.node)
+  ) {
+    return false
+  }
+
+  if (dispatch !== undefined) {
+    const emptyBlock = firstBlock.type.create(firstBlock.attrs)
+    const emptyItem = context.node.type.createChecked(
+      { ...context.node.attrs, checked: false, collapsed: false },
+      emptyBlock,
+    )
+    const insertAt = state.selection.$from.after(context.depth)
+    const transaction = state.tr.insert(insertAt, emptyItem)
+    const selection = Selection.near(
+      transaction.doc.resolve(insertAt + 2),
+      1,
+    )
+    dispatch(transaction.setSelection(selection).scrollIntoView())
+  }
+  return true
 }
 
 const protectRootOutdent: Command = (state) => isSelectionInRootItem(state)
@@ -230,7 +233,7 @@ export function OutlineMode({ allowTitle }: OutlineModeProps): null {
   const keymap = useMemo(
     () => ({
       Backspace: deleteEmptyOutlineItem,
-      Enter: protectEmptyRootItem,
+      Enter: insertEmptyRootSibling,
       Tab: protectInvalidIndent,
       'Shift-Tab': protectRootOutdent,
       'Mod-[': protectRootOutdent,

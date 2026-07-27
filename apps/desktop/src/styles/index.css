@@ -346,6 +346,21 @@ html:root {
   margin-top: 0;
 }
 
+/* Workflowy-style hierarchy guides for the dedicated outliner surface. Each
+   list node owns its complete descendant subtree, so a guide on a parent item
+   naturally spans that subtree and composes at every nesting level. It starts
+   below the parent's marker and ends at the final child's marker. */
+.reflect-outline-editor
+  .prosemirror-flat-list:has(> .list-content > .prosemirror-flat-list)::after {
+  content: '';
+  position: absolute;
+  inset-block: 1lh 0.5lh;
+  inset-inline-start: 0.5lh;
+  width: 1px;
+  background: color-mix(in oklab, var(--text-muted) 32%, transparent);
+  pointer-events: none;
+}
+
 /* Heading weight and size compete with meowdown's `.ProseMirror h*` theme
    rules. meowdown is layered (`@layer meowdown`), so these unlayered rules win
    without a `.ProseMirror` compound. (Margin and letter-spacing ride along; only

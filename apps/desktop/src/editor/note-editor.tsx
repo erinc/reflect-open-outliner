@@ -460,7 +460,11 @@ export function NoteEditor({
         // which a touch webview can express. Turning it off also drops the drop
         // indicator, which meowdown gates on the same prop.
         blockHandle={isTouchEditorSurface() ? false : blockHandle}
-        editorClassName={cn('reflect-editor', className)}
+        editorClassName={cn(
+          'reflect-editor',
+          outlineMode && 'reflect-outline-editor',
+          className,
+        )}
         {...(titlePlaceholder !== undefined ? { placeholder: titlePlaceholder } : {})}
         onDocChange={handleDocChange}
         onWikilinkClick={handleWikilinkClick}

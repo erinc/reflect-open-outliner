@@ -36,14 +36,29 @@ describe('NoteEditor outline mode', () => {
     })
   })
 
-  it('does not create a blank paragraph from an empty root item', async () => {
+  it('keeps an empty root item as a bullet and creates the next sibling', async () => {
     const handle = await renderOutline('- first')
 
     await userEvent.keyboard('{Enter}{Enter}second')
 
     await vi.waitFor(() => {
-      expect(handle.getMarkdown()).toBe('- first\n- second\n')
+      expect(handle.getMarkdown()).toBe('- first\n-\n- second\n')
     })
+  })
+
+  it('shows hierarchy guides only when an item has nested children', async () => {
+    await renderOutline('- parent\n  - child\n    - grandchild\n- sibling')
+
+    expect(editorRoot.element().classList.contains('reflect-outline-editor')).toBe(
+      true,
+    )
+    const items = editorRoot.element().querySelectorAll('.prosemirror-flat-list')
+    expect(items).toHaveLength(4)
+    expect(getComputedStyle(items[0]!, '::after').content).toBe('""')
+    expect(getComputedStyle(items[0]!, '::after').width).toBe('1px')
+    expect(getComputedStyle(items[1]!, '::after').content).toBe('""')
+    expect(getComputedStyle(items[2]!, '::after').content).toBe('none')
+    expect(getComputedStyle(items[3]!, '::after').content).toBe('none')
   })
 
   it('deletes an empty item and moves the caret to the previous item end', async () => {

@@ -68,7 +68,7 @@ describe('normalizeOutlineTransaction', () => {
     expect(doc.child(1).type.name).toBe('list')
   })
 
-  it('removes an abandoned empty item while keeping surrounding content', () => {
+  it('keeps an empty outline item as a durable bullet block', () => {
     const base = markdownToDoc('- placeholder')
     const first = listItem(base, 'first')
     const empty = listItem(base, '')
@@ -82,22 +82,25 @@ describe('normalizeOutlineTransaction', () => {
 
     const transaction = normalizeOutlineTransaction(state, false)
 
-    expect(transaction).not.toBeNull()
-    expect(docToMarkdown(transaction!.doc)).toBe('- first\n- second\n')
+    expect(transaction).toBeNull()
+    expect(docToMarkdown(state.doc)).toBe('- first\n-\n- second\n')
   })
 
-  it('keeps the active empty item as the transient typing target', () => {
-    const base = markdownToDoc('- placeholder')
-    const first = listItem(base, 'first')
-    const empty = listItem(base, '')
-    const doc = base.type.create(base.attrs, [first, empty])
-    const emptyTextPosition = first.nodeSize + 2
-    const state = EditorState.create({
-      doc,
-      selection: TextSelection.create(doc, emptyTextPosition),
-    })
+  it('wraps an abandoned empty paragraph instead of deleting it', () => {
+    const base = markdownToDoc('first')
+    const first = base.firstChild!
+    const empty = base.type.schema.nodes['paragraph']!.create()
+    const second = base.type.schema.nodes['paragraph']!.create(
+      null,
+      base.type.schema.text('second'),
+    )
+    const doc = base.type.create(base.attrs, [first, empty, second])
+    const state = EditorState.create({ doc })
 
-    expect(normalizeOutlineTransaction(state, false)).toBeNull()
+    const transaction = normalizeOutlineTransaction(state, false)
+
+    expect(transaction).not.toBeNull()
+    expect(docToMarkdown(transaction!.doc)).toBe('- first\n-\n- second\n')
   })
 })
 
