@@ -4,8 +4,7 @@ import type { CalendarAttendee, CalendarEvent } from './commands'
 /**
  * Display policy for the daily-note events panel — the TypeScript half of the
  * calendar integration (the Rust side reports events verbatim). Mirrors v1:
- * meetings the user declined and all-day placeholders (OOO banners, holidays)
- * don't belong beside the daily note.
+ * meetings the user declined don't belong beside the daily note.
  */
 
 /** Did the current user decline this event? */
@@ -22,14 +21,13 @@ function isDisplayableEvent(event: CalendarEvent): boolean {
   if (name === '' || PLACEHOLDER_NAMES.has(name)) {
     return false
   }
-  return !event.allDay && !event.canceled && !isDeclinedByUser(event)
+  return !event.canceled && !isDeclinedByUser(event)
 }
 
 /**
  * The events worth showing for a day, in start order — v1's display rules:
- * drops all-day events, canceled events, events the user declined, untitled
- * events, and busy-block placeholders; an event on two enabled calendars
- * shows once.
+ * drops canceled events, events the user declined, untitled events, and
+ * busy-block placeholders; an event on two enabled calendars shows once.
  */
 export function displayEvents(events: CalendarEvent[]): CalendarEvent[] {
   const seen = new Set<string>()

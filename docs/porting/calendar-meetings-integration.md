@@ -57,9 +57,9 @@ is added to [docs/privacy.md](../privacy.md)'s inventory.
    "2/5 calendars" selector. Enabled calendar identifiers are stored in the
    user settings file.
 3. **Events on the daily note.** Today's events from enabled calendars
-   appear in a panel on the daily note: title and start time (respecting the
-   existing time-format setting), declined and all-day/busy-placeholder
-   events filtered out, as in v1.
+   appear in a panel on the daily note: title and either the start time
+   (respecting the existing time-format setting) or an **All day** label.
+   Declined and busy-placeholder events are filtered out.
 4. **Add to daily note.** Each event has one primary action, carrying over
    the v1 modal: editable meeting name, editable attendee list, and a
    "create backlinked note?" choice. Submitting writes plain markdown into

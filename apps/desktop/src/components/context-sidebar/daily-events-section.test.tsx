@@ -120,7 +120,7 @@ describe('DailyEventsSection', () => {
     expect(rows[0]?.textContent).toContain('9:00am')
   })
 
-  it('hides all-day and declined-by-me events', async () => {
+  it('shows all-day events and hides declined-by-me events', async () => {
     events = [
       eventAt(9),
       eventAt(10, { title: 'OOO banner', allDay: true }),
@@ -134,7 +134,8 @@ describe('DailyEventsSection', () => {
     await renderSection()
 
     await expect.element(page.getByText('Meeting at 9')).toBeInTheDocument()
-    expect(page.getByText('OOO banner').query()).toBeNull()
+    await expect.element(page.getByText('OOO banner')).toBeInTheDocument()
+    await expect.element(page.getByText('All day')).toBeInTheDocument()
     expect(page.getByText('Declined sync').query()).toBeNull()
   })
 
@@ -199,6 +200,26 @@ describe('DailyEventsSection', () => {
       }),
     )
     await expectLocatorToHaveCount(page.getByLabelText('Meeting name'), 0)
+  })
+
+  it('adds an all-day event without a midnight start time', async () => {
+    events = [eventAt(0, { title: 'Company holiday', allDay: true })]
+    await renderSection()
+    await page.getByRole('button', { name: /company holiday/i }).click()
+
+    await expect.element(page.getByRole('dialog').getByText('All day')).toBeInTheDocument()
+    await page.getByRole('button', { name: /add to daily note/i }).click()
+
+    await vi.waitFor(() =>
+      expect(addMeetingToDaily).toHaveBeenCalledWith({
+        date: DATE,
+        title: 'Company holiday',
+        attendees: [],
+        backlinkMeeting: false,
+        lookupContacts: false,
+        generation: 3,
+      }),
+    )
   })
 
   it('passes invite emails and the contacts gate through to the action', async () => {

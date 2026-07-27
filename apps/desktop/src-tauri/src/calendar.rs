@@ -2,9 +2,9 @@
 //!
 //! Rust owns the capability only — requesting access, listing calendars, and
 //! listing events for a date range. Which calendars are enabled, how events
-//! are filtered (declined, all-day), and what markdown an event turns into
-//! are policy in `@reflect/core`. Events are fetched live and never
-//! persisted; the SQLite index stays a projection of markdown only
+//! are filtered (declined, canceled, placeholders), and what markdown an event
+//! turns into are policy in `@reflect/core`. Events are fetched live and
+//! never persisted; the SQLite index stays a projection of markdown only
 //! (docs/porting/calendar-meetings-integration.md).
 //!
 //! macOS Calendar already aggregates Google / Microsoft / iCloud accounts, so

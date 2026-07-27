@@ -99,9 +99,9 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
 
 /**
  * Events from `calendarIds` overlapping `[start, end]` (epoch milliseconds),
- * unfiltered — display policy (declined, all-day) is `displayEvents` in
- * `./events`. Unknown calendar identifiers are skipped, not errors, so a
- * removed account degrades to fewer events.
+ * unfiltered — display policy (declined, canceled, placeholders) is
+ * `displayEvents` in `./events`. Unknown calendar identifiers are skipped,
+ * not errors, so a removed account degrades to fewer events.
  */
 export async function listCalendarEvents(
   start: number,

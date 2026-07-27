@@ -44,18 +44,19 @@ describe('isDeclinedByUser', () => {
 })
 
 describe('displayEvents', () => {
-  it('drops all-day, canceled, and user-declined events', () => {
+  it('keeps all-day events while dropping canceled and user-declined events', () => {
     const keep = event({ id: 'keep' })
+    const allDay = event({ id: 'all-day', allDay: true, startsAt: 500 })
     const events = [
       keep,
-      event({ id: 'all-day', allDay: true }),
+      allDay,
       event({ id: 'canceled', canceled: true }),
       event({
         id: 'declined',
         attendees: [attendee({ isCurrentUser: true, status: 'declined' })],
       }),
     ]
-    expect(displayEvents(events).map((entry) => entry.id)).toEqual(['keep'])
+    expect(displayEvents(events).map((entry) => entry.id)).toEqual(['all-day', 'keep'])
   })
 
   it('drops untitled events and busy-block placeholders (v1 rules)', () => {

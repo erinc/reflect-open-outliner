@@ -45,7 +45,9 @@ export function DailyEventsSection({ date }: DailyEventsSectionProps): ReactElem
                 {event.title}
               </span>
               <span className="flex-none text-xs tabular-nums text-text-muted">
-                {formatTimeOfDay(new Date(event.startsAt), settings.timeFormat)}
+                {event.allDay
+                  ? 'All day'
+                  : formatTimeOfDay(new Date(event.startsAt), settings.timeFormat)}
               </span>
               <span
                 aria-hidden
