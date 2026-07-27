@@ -2,6 +2,63 @@
 
 This document helps AI agents and automated systems interact with the Reflect repo safely and effectively. It summarizes setup, workflows, CI parity, testing, directories, and environment variables.
 
+### Fork safety and maintenance
+
+These rules override any generic publishing or branching guidance elsewhere in
+this document:
+
+- `origin` is the only writable remote:
+  `git@github.com:erinc/reflect-open-outliner.git`.
+- `upstream` is strictly read-only:
+  `git@github.com:team-reflect/reflect-open.git`. Fetching and reading are
+  allowed. Never push to it or create a pull request, issue, review, comment,
+  release, branch, or any other mutation against it.
+- `master` is a clean mirror of `upstream/master`. Never add outliner work to
+  `master`, and never merge an outliner branch back into it.
+- `codex/outliner-foundation` is the maintained Outliner product branch.
+  Regularly merge `master` into it. Because it is published and shared, do not
+  rebase or force-push it.
+- New work may be committed directly to `codex/outliner-foundation`. Optional
+  short-lived feature branches must start from it and, if a PR is useful, target
+  `erinc/reflect-open-outliner:codex/outliner-foundation`. Never target the
+  upstream repository or the fork's mirror `master`.
+- Before pushing, verify that every outgoing commit belongs to the requested
+  work. This checkout is shared, so preserve and do not publish unrelated local
+  commits made by the user or another agent.
+
+Configure the local safety defaults once:
+
+```bash
+git config remote.pushDefault origin
+git config branch.master.pushRemote origin
+git config fetch.prune true
+git config rerere.enabled true
+git config rerere.autoupdate true
+```
+
+Update the upstream mirror and merge it into Outliner with:
+
+```bash
+git status --short
+git fetch --prune origin
+git fetch --prune upstream
+
+git switch master
+git merge --ff-only upstream/master
+git push origin master
+
+git switch codex/outliner-foundation
+git merge master
+
+pnpm install --frozen-lockfile
+pnpm check
+pnpm build
+git push origin codex/outliner-foundation
+```
+
+If the fast-forward or merge fails, stop and investigate. Never use a force push
+to make synchronization succeed.
+
 ### What is Reflect
 
 Reflect is a modern note‑taking tool with a TypeScript codebase. This repo contains Reflect V2, a rewrite of the original Reflect code-base to make it offline-first, markdown backed, and open source.
@@ -44,17 +101,23 @@ Drawn from the product docs — read these for deeper context:
 - **Verify locally.** Run typecheck, lint, and targeted tests for the code you
   touched. If a required check cannot run, report the reason and the residual risk.
 - **Publish completed work.** When a requested implementation is complete and
-  verified, create or use an appropriate branch, commit the intended changes, push,
-  open a normal ready-for-review PR, and wait for CI/checks, Bugbot, review
-  comments, merge conflicts, and other blockers to settle.
+  verified, follow **Fork safety and maintenance** above. Commit and push only
+  the intended changes to `origin`. When using a short-lived feature branch,
+  open a normal ready-for-review PR inside the fork targeting
+  `codex/outliner-foundation`, then wait for CI/checks, review comments, merge
+  conflicts, and other blockers to settle. Direct work on
+  `codex/outliner-foundation` does not require a PR.
 
 ### Development workflow
 
-Development happens on `master` (the only long-lived branch); branch from it and
-target it with PRs. release-please keeps a beta and a stable Release PR open side by
-side; merging one publishes that channel. Between stable releases the version carries
-a prerelease suffix (`0.7.0-beta.3`), which the release pipeline publishes as GitHub
-pre-releases. See [docs/macos-distribution.md](docs/macos-distribution.md).
+The upstream project develops on `master`, but this fork reserves `master` as a
+clean upstream mirror. Outliner development happens on
+`codex/outliner-foundation` or short-lived branches created from it, following
+**Fork safety and maintenance** above. Upstream release-please keeps a beta and
+a stable Release PR open side by side; merging one publishes that channel.
+Between stable releases the version carries a prerelease suffix
+(`0.7.0-beta.3`), which the release pipeline publishes as GitHub pre-releases.
+See [docs/macos-distribution.md](docs/macos-distribution.md).
 
 PR titles must be conventional commits (`feat:` / `fix:` / `chore:` …, enforced by
 CI). The title becomes the squash-commit message, drives the release-please version
