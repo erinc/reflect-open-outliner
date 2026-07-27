@@ -465,6 +465,110 @@ pub fn asset_write(
     Ok(())
 }
 
+/// Delete one recording under `audio-memos/`: cancelling a recording session
+/// discards the segments it already landed. Deliberately scoped to the
+/// `audio-memos/` prefix so this command can never grow into a general
+/// file-delete IPC. Idempotent — a segment deleted twice (or never written)
+/// is fine.
+#[tauri::command]
+pub fn audio_memo_delete(path: String, generation: u64, state: State<GraphState>) -> AppResult<()> {
+    if !path.starts_with("audio-memos/") {
+        return Err(AppError::traversal(format!(
+            "not an audio memo path: {path}"
+        )));
+    }
+    let root = root_for_generation(&state, generation)?;
+    let abs = resolve(&root, &path)?;
+    // An iCloud-evicted segment exists only as its `.name.icloud` stub —
+    // mirror `note_delete` so a cancelled session's evicted parts still
+    // delete (Plan 21).
+    let target = if abs.exists() {
+        abs
+    } else {
+        eviction_placeholder(&abs)
+            .filter(|stub| stub.exists())
+            .unwrap_or(abs)
+    };
+    match fs::remove_file(target) {
+        Ok(()) => Ok(()),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(err) => Err(err.into()),
+    }
+}
+
+/// The per-segment transcript cache lives under `.reflect/transcripts/`:
+/// derived, rebuildable data (deleting it re-bills a transcription, never
+/// loses content), invisible to the watcher, indexer, and sync like the rest
+/// of `.reflect/`. It gets its own narrow commands because the attachment
+/// IPC is deliberately fenced to `assets/` and `audio-memos/`.
+fn transcript_cache_file(root: &Path, name: &str) -> AppResult<std::path::PathBuf> {
+    if name.is_empty()
+        || name.contains('/')
+        || name.contains('\\')
+        || name.contains('\0')
+        || name == "."
+        || name == ".."
+    {
+        return Err(AppError::traversal(format!(
+            "transcript cache name must be a plain filename: {name:?}"
+        )));
+    }
+    // Through the shared guard: a cache directory (or entry) symlinked
+    // outside the graph must not redirect IO past the generation-pinned
+    // root. The plain-filename check above stays — `resolve` would accept a
+    // nested relative path, and a cache name must be a single segment.
+    let path = resolve(root, &format!(".reflect/transcripts/{name}"))?;
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    Ok(path)
+}
+
+/// Read one cached segment transcript; `notFound` when nothing is cached.
+#[tauri::command]
+pub fn transcript_cache_read(
+    name: String,
+    generation: u64,
+    state: State<GraphState>,
+) -> AppResult<String> {
+    let root = root_for_generation(&state, generation)?;
+    match fs::read_to_string(transcript_cache_file(&root, &name)?) {
+        Ok(contents) => Ok(contents),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+            Err(AppError::not_found(format!("no cached transcript: {name}")))
+        }
+        Err(err) => Err(err.into()),
+    }
+}
+
+/// Cache one segment's transcription result. A torn write is harmless — the
+/// reader treats undecodable JSON as "no cache" and re-transcribes.
+#[tauri::command]
+pub fn transcript_cache_write(
+    name: String,
+    contents: String,
+    generation: u64,
+    state: State<GraphState>,
+) -> AppResult<()> {
+    let root = root_for_generation(&state, generation)?;
+    fs::write(transcript_cache_file(&root, &name)?, contents)?;
+    Ok(())
+}
+
+/// Read a binary asset's bytes as a **raw IPC response** — no base64, no
+/// JSON. Long audio memos read back for transcription would otherwise cross
+/// the bridge ~1.33× inflated inside one giant JSON string. Pinned to
+/// `generation` for the same reason as [`asset_read`].
+#[tauri::command]
+pub fn asset_read_binary(
+    path: String,
+    generation: u64,
+    state: State<GraphState>,
+) -> AppResult<tauri::ipc::Response> {
+    let root = root_for_generation(&state, generation)?;
+    Ok(tauri::ipc::Response::new(fs::read(resolve(&root, &path)?)?))
+}
+
 /// Read a binary asset's bytes, base64-encoded for the JSON IPC (e.g. audio
 /// memos read back for transcription). Pinned to `generation`, unlike
 /// `note_read`: the caller is a background pass that can span a graph
@@ -824,6 +928,38 @@ pub(crate) fn invalidate_file_catalog(state: &GraphState, root: &Path) {
             ?error,
             "graph state lock poisoned while invalidating catalog"
         ),
+    }
+}
+
+#[cfg(test)]
+mod transcript_cache_tests {
+    use super::transcript_cache_file;
+
+    #[test]
+    fn accepts_a_plain_name_and_creates_the_cache_dir() {
+        let graph = tempfile::tempdir().expect("graph");
+        let path = transcript_cache_file(graph.path(), "memo.part-001.m4a.json").expect("path");
+        assert!(path.ends_with(".reflect/transcripts/memo.part-001.m4a.json"));
+        assert!(graph.path().join(".reflect/transcripts").is_dir());
+    }
+
+    #[test]
+    fn rejects_path_shaped_names() {
+        let graph = tempfile::tempdir().expect("graph");
+        assert!(transcript_cache_file(graph.path(), "../escape.json").is_err());
+        assert!(transcript_cache_file(graph.path(), "a/b.json").is_err());
+        assert!(transcript_cache_file(graph.path(), "").is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rejects_a_cache_dir_symlinked_outside_the_graph() {
+        let graph = tempfile::tempdir().expect("graph");
+        let outside = tempfile::tempdir().expect("outside");
+        std::fs::create_dir_all(graph.path().join(".reflect")).expect("reflect dir");
+        std::os::unix::fs::symlink(outside.path(), graph.path().join(".reflect/transcripts"))
+            .expect("symlink");
+        assert!(transcript_cache_file(graph.path(), "memo.json").is_err());
     }
 }
 

@@ -116,27 +116,35 @@ export {
   type ContextWindowOptions,
 } from '../ai/chat/context-window'
 export type { ModelMessage as ChatModelMessage } from 'ai'
+export { base64ToBytes } from '../lib/base64'
 export {
-  base64ToBytes,
   isTranscriptionRejected,
-  transcribeAudio,
   TranscriptionRejectedError,
-  type TranscriptionRequest,
-} from '../ai/transcribe'
+} from '../ai/transcribe-http'
+export { transcribeAudio, type TranscriptionRequest } from '../ai/transcribe'
 export {
   audioMemoFromPath,
   audioMemoIdentity,
+  audioMemoPartFromPath,
+  audioMemoPartPath,
   captureAudioMemo,
+  captureAudioMemoPart,
   isSilentStop,
-  listPendingAudioMemos,
+  listPendingAudioMemoSessions,
   reconcileAudioMemos,
   type AudioMemoIdentity,
   type CaptureAudioMemoInput,
   type CaptureAudioMemoOutcome,
+  type CaptureAudioMemoPartInput,
   type ReconcileAudioMemosInput,
   type ReconcileAudioMemosOutcome,
   type ReconcileStop,
 } from '../actions/audio-memo'
+export {
+  AUDIO_MEMO_MAX_DURATION_MS,
+  AUDIO_MEMO_SEGMENT_MS,
+  type AudioMemoSession,
+} from '../actions/audio-memo-session'
 export {
   captureAckSchema,
   captureEnvelopeSchema,
