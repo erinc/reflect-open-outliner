@@ -61,6 +61,111 @@ describe('NoteEditor outline mode', () => {
     expect(getComputedStyle(items[3]!, '::after').content).toBe('none')
   })
 
+  it('focuses a clicked bullet subtree and zooms out through breadcrumbs', async () => {
+    const handle = await renderOutline(
+      '- parent\n  - child\n    - grandchild\n  - other child\n- sibling',
+    )
+    const items = editorRoot.element().querySelectorAll<HTMLElement>('.prosemirror-flat-list')
+    const parentMarker = items[0]?.querySelector<HTMLElement>(':scope > .list-marker')
+    const childMarker = items[1]?.querySelector<HTMLElement>(':scope > .list-marker')
+    if (
+      parentMarker === null ||
+      parentMarker === undefined ||
+      childMarker === null ||
+      childMarker === undefined
+    ) {
+      throw new Error('outline markers were not rendered')
+    }
+
+    await userEvent.click(parentMarker)
+
+    await vi.waitFor(() => {
+      expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(true)
+    })
+    const breadcrumbs = page.getByRole('navigation', { name: 'Focused block path' })
+    await expect.element(breadcrumbs).toBeVisible()
+    expect(
+      breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
+    ).toBe('parent')
+    expect(getComputedStyle(items[1]!).display).not.toBe('none')
+    expect(getComputedStyle(items[2]!).display).not.toBe('none')
+    expect(getComputedStyle(items[3]!).display).not.toBe('none')
+    expect(getComputedStyle(items[4]!).display).toBe('none')
+
+    await userEvent.click(page.getByRole('button', { name: 'All blocks' }))
+    await userEvent.click(childMarker)
+
+    await vi.waitFor(() => {
+      expect(
+        breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
+      ).toBe('child')
+    })
+    expect(getComputedStyle(items[0]!).display).toBe('contents')
+    expect(getComputedStyle(items[3]!).display).toBe('none')
+    expect(handle.getMarkdown()).toBe(
+      '- parent\n  - child\n    - grandchild\n  - other child\n- sibling\n',
+    )
+
+    await userEvent.click(page.getByRole('button', { name: 'All blocks' }))
+
+    await vi.waitFor(() => {
+      expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(false)
+    })
+    expect(getComputedStyle(items[3]!).display).not.toBe('none')
+    expect(getComputedStyle(items[4]!).display).not.toBe('none')
+  })
+
+  it('focuses the caret item with the keyboard and uses Escape to zoom up', async () => {
+    await renderOutline('- parent\n  - child')
+
+    await userEvent.keyboard('{Meta>}{Shift>}.{/Shift}{/Meta}')
+
+    const breadcrumbs = page.getByRole('navigation', { name: 'Focused block path' })
+    await expect.element(breadcrumbs).toBeVisible()
+    expect(
+      breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
+    ).toBe('child')
+
+    await userEvent.keyboard('{Escape}')
+
+    await vi.waitFor(() => {
+      expect(
+        breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
+      ).toBe('parent')
+    })
+    expect(editorRoot.element().textContent).toContain('child')
+
+    await userEvent.keyboard('{Escape}')
+
+    await vi.waitFor(() => {
+      expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(false)
+    })
+  })
+
+  it('creates a child when Enter follows the focused root text', async () => {
+    const handle = await renderOutline('- parent\n- sibling')
+    const parentMarker = editorRoot
+      .element()
+      .querySelector<HTMLElement>('.prosemirror-flat-list > .list-marker')
+    if (parentMarker === null) {
+      throw new Error('parent marker was not rendered')
+    }
+
+    await userEvent.click(parentMarker)
+    handle.setSelection('end')
+    await userEvent.keyboard('{Enter}child')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- parent\n  - child\n- sibling\n')
+    })
+    expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(
+      true,
+    )
+    const items = editorRoot.element().querySelectorAll('.prosemirror-flat-list')
+    expect(items).toHaveLength(3)
+    expect(getComputedStyle(items[2]!).display).toBe('none')
+  })
+
   it('deletes an empty item and moves the caret to the previous item end', async () => {
     const handle = await renderOutline('- first')
 

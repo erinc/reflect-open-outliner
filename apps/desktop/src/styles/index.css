@@ -361,6 +361,89 @@ html:root {
   pointer-events: none;
 }
 
+.reflect-outline-editor
+  .prosemirror-flat-list[data-list-kind='bullet']
+  > .list-marker {
+  cursor: zoom-in;
+}
+
+/* Focused-block view keeps the complete ProseMirror document mounted and
+   editable, but projects one outline subtree. Ancestor list shells become
+   transparent so the focused item returns to the root indentation; every
+   off-path sibling stays in the document and is simply not painted. */
+.reflect-outline-editor[data-reflect-outline-focus]
+  > :not(.reflect-outline-focus-ancestor, .reflect-outline-breadcrumbs) {
+  display: none;
+}
+
+.reflect-outline-editor[data-reflect-outline-focus]
+  .reflect-outline-focus-ancestor:not(.reflect-outline-focus-target),
+.reflect-outline-editor[data-reflect-outline-focus]
+  .reflect-outline-focus-ancestor:not(.reflect-outline-focus-target)
+  > .list-content {
+  display: contents;
+}
+
+.reflect-outline-editor[data-reflect-outline-focus]
+  .reflect-outline-focus-ancestor:not(.reflect-outline-focus-target)
+  > .list-marker,
+.reflect-outline-editor[data-reflect-outline-focus]
+  .reflect-outline-focus-ancestor:not(.reflect-outline-focus-target)
+  > .list-content
+  > :first-child,
+.reflect-outline-editor[data-reflect-outline-focus]
+  .reflect-outline-focus-ancestor:not(.reflect-outline-focus-target)
+  > .list-content
+  > .prosemirror-flat-list:not(.reflect-outline-focus-ancestor) {
+  display: none;
+}
+
+.reflect-outline-editor[data-reflect-outline-focus]
+  .reflect-outline-focus-target
+  > .list-marker {
+  cursor: default;
+}
+
+.reflect-outline-breadcrumbs {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+  margin-block: 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+
+.reflect-outline-breadcrumb {
+  min-width: 0;
+  max-width: 14rem;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  padding-inline: 0.25rem;
+  text-overflow: ellipsis;
+}
+
+button.reflect-outline-breadcrumb {
+  cursor: pointer;
+}
+
+button.reflect-outline-breadcrumb:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.reflect-outline-breadcrumb[aria-current='page'] {
+  color: var(--text);
+  font-weight: 550;
+}
+
+.reflect-outline-breadcrumb-separator {
+  flex: none;
+  opacity: 0.55;
+}
+
 /* Heading weight and size compete with meowdown's `.ProseMirror h*` theme
    rules. meowdown is layered (`@layer meowdown`), so these unlayered rules win
    without a `.ProseMirror` compound. (Margin and letter-spacing ride along; only

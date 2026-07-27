@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactElement } from 'react'
 import { definePlugin } from '@prosekit/core'
 import type { ProseMirrorNode } from '@prosekit/pm/model'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@prosekit/pm/state'
 import { Priority } from '@meowdown/core'
 import { useExtension, useKeymap } from '@meowdown/react'
+import { OutlineFocus } from '@/editor/outline-focus'
 
 interface OutlineModeProps {
   /**
@@ -219,7 +220,7 @@ function protectListKind(kind: string): Command {
  * This is installed through Meowdown's child-extension seam while the generic
  * behavior is prepared for Meowdown's own `outlineMode` API.
  */
-export function OutlineMode({ allowTitle }: OutlineModeProps): null {
+export function OutlineMode({ allowTitle }: OutlineModeProps): ReactElement {
   const invariant = useMemo(
     () =>
       definePlugin(
@@ -247,5 +248,5 @@ export function OutlineMode({ allowTitle }: OutlineModeProps): null {
 
   useExtension(invariant, { priority: Priority.high })
   useKeymap(keymap, { priority: Priority.high })
-  return null
+  return <OutlineFocus />
 }

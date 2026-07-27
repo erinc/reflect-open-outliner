@@ -140,10 +140,13 @@ saving.
 
 ### Phase 5 — Focus and zoom
 
-- Route to a note plus block ID.
-- Render the focused block as the view subject and only its descendants as the
-  editable outline.
-- Show ancestor breadcrumbs and support zoom-out/history navigation.
+- [ ] Route to a note plus block ID.
+- [x] Render the focused block as the view subject and only its descendants as
+  the editable outline. The first implementation is session-local and maps its
+  ProseMirror position through edits; it does not pretend that position is a
+  durable address.
+- [x] Show ancestor breadcrumbs and support zoom-out navigation inside the
+  editor. Browser history waits for stable block routes.
 - Keep edits in the original note document; focused views are projections, not
   copied notes.
 - Make backlinks, search results, tasks, and block links open the correct focus
@@ -203,9 +206,12 @@ and fork-local no-op updater endpoint, so it can coexist with Reflect without
 being replaced by an original-author update. Graph files, settings, recent
 graphs, and keychain entries remain intentionally compatible with Reflect.
 
-This foundation includes the document invariant and core keyboard guards. It
-does not yet include persistent folding, block identity, focus/zoom, or the
-previewable graph migration.
+This foundation includes the document invariant, core keyboard guards, and a
+session-local focused-block projection. Click a bullet (or press
+<kbd>Mod-Shift-.</kbd> with the caret in an item) to focus its subtree; use the
+ancestor breadcrumbs or <kbd>Escape</kbd> to zoom out. It does not yet include
+persistent folding, durable block identity and routes, or the previewable graph
+migration.
 
 ## Maintaining the fork
 
