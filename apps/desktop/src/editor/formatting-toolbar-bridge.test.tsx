@@ -25,12 +25,17 @@ interface Setup {
   rerender: (nextEditor: boolean) => Promise<void>
 }
 
-async function setupEditor(initialContent: string, touchEditor = true): Promise<Setup> {
+async function setupEditor(
+  initialContent: string,
+  touchEditor = true,
+  outlineMode = false,
+): Promise<Setup> {
   setPlatformSurface({ touchEditor })
   const grabbed: { current: NoteEditorHandle | null } = { current: null }
   const editor = (
     <NoteEditor
       initialContent={initialContent}
+      outlineMode={outlineMode}
       onWikilinkSearch={async () => []}
       handleRef={(handle) => {
         grabbed.current = handle
@@ -122,6 +127,18 @@ describe('FormattingToolbarBridge', () => {
     captured.toolbar?.commands.cycleCheckableList()
     await vi.waitFor(() => {
       expect(handle.getMarkdown()).toBe('- [ ] alpha\n')
+    })
+  })
+
+  it('does not unwrap an outline item through the bullet toolbar command', async () => {
+    const { handle } = await setupEditor('- alpha', true, true)
+
+    await pmRoot.getByText('alpha').click()
+    await expect.element(toolbarState).toHaveTextContent('has-toolbar')
+
+    captured.toolbar?.commands.toggleBulletList()
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- alpha\n')
     })
   })
 

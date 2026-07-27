@@ -38,6 +38,7 @@ import {
   type LightboxImage,
 } from '@/editor/image-lightbox'
 import { isOpenableExternalUrl } from '@/editor/open-external-link'
+import { OutlineMode } from '@/editor/outline-mode'
 import { isTouchEditorSurface } from '@/lib/platform-surface'
 import { useLightboxTransition } from '@/editor/use-lightbox-transition'
 import { isDeepLinkUrl } from '@/lib/deep-links/parse'
@@ -133,6 +134,16 @@ interface NoteEditorProps {
    * has no hover to reveal the grip.
    */
   blockHandle?: boolean
+  /**
+   * Enforce outline-item structure for every body block. Off until the graph's
+   * existing Markdown has passed through the explicit outliner migration.
+   */
+  outlineMode?: boolean
+  /**
+   * Preserve the first non-empty H1 outside the outline as a regular note's
+   * title. Only relevant when {@link outlineMode} is enabled.
+   */
+  outlineTitle?: boolean
   /** Resolve an image `![…](…)` source to a displayable URL; unresolved images are skipped. */
   resolveImageUrl?: (src: string) => string | null
   /**
@@ -233,6 +244,8 @@ export function NoteEditor({
   timeFormat = '12h',
   bulletAfterHeading = false,
   blockHandle = false,
+  outlineMode = false,
+  outlineTitle = false,
   resolveImageUrl,
   resolveAssetOpenPath,
   openAsset,
@@ -467,8 +480,9 @@ export function NoteEditor({
         onFileClick={handleFileClick}
         onExitBoundary={handleExitBoundary}
       >
+        {outlineMode ? <OutlineMode allowTitle={outlineTitle} /> : null}
         <EditorInputTraits />
-        <FormattingToolbarBridge />
+        <FormattingToolbarBridge outlineMode={outlineMode} />
         {renderWikilinkHoverCard !== undefined ? (
           <WikilinkHoverCard className="reflect-hover-card">
             {renderWikilinkHoverCard}

@@ -9,6 +9,11 @@ import {
   type FormattingToolbarCommands,
   type FormattingTriggerText,
 } from './formatting-toolbar-store'
+import { isSelectionInListKind } from './outline-mode'
+
+interface FormattingToolbarBridgeProps {
+  readonly outlineMode: boolean
+}
 
 /**
  * Publishes this editor's formatting-toolbar surface while it holds focus
@@ -29,7 +34,9 @@ import {
  * The command surface also carries `scrollCaretIntoView` for the keyboard's
  * caret reveal; no toolbar button calls it.
  */
-export function FormattingToolbarBridge(): null {
+export function FormattingToolbarBridge({
+  outlineMode,
+}: FormattingToolbarBridgeProps): null {
   const editor = useEditor<EditorExtension>()
 
   useEffect(() => {
@@ -70,7 +77,13 @@ export function FormattingToolbarBridge(): null {
       }
 
       const commands: FormattingToolbarCommands = {
-        toggleBulletList: () => run(() => editor.commands.toggleList({ kind: 'bullet' })),
+        toggleBulletList: () =>
+          run(() => {
+            if (outlineMode && isSelectionInListKind(editor.state, 'bullet')) {
+              return
+            }
+            editor.commands.toggleList({ kind: 'bullet' })
+          }),
         cycleCheckableList: () => run(() => editor.commands.cycleCheckableList()),
         indent: () => run(() => editor.commands.indentList()),
         dedent: () => run(() => editor.commands.dedentList()),
@@ -145,7 +158,7 @@ export function FormattingToolbarBridge(): null {
       }
       teardown?.()
     }
-  }, [editor])
+  }, [editor, outlineMode])
 
   return null
 }

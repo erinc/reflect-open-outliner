@@ -37,6 +37,8 @@ import { useGraph } from '@/providers/graph-provider'
 import { useNoteSearchQuery, useNoteSearchReport } from '@/providers/note-find-provider'
 import { useSettings } from '@/providers/settings-provider'
 
+const outlineMode = import.meta.env['VITE_REFLECT_OUTLINER'] === '1'
+
 interface NotePaneProps {
   /** Graph-relative path of the note to edit. */
   path: string
@@ -361,6 +363,8 @@ export function NotePaneComponent({
         smoothCaretAnimation={settings.editorSmoothCaretAnimation}
         timeFormat={settings.timeFormat}
         bulletAfterHeading={settings.editorBulletAfterHeading}
+        outlineMode={outlineMode}
+        outlineTitle={!dailyNote}
         // The grip drag-reorders blocks and the "+" inserts a paragraph below.
         blockHandle={true}
         resolveImageUrl={resolveImageUrl}
