@@ -305,6 +305,7 @@ html:root {
   padding: 0;
   font-size: inherit;
   font-family: var(--font-reading, var(--font-sans));
+  font-weight: 450;
 }
 
 /* The primary note editor (the note pane and every daily-stream row, both via
