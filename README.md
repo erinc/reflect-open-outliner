@@ -1,13 +1,13 @@
 # Reflect
 
+[Reflect Outliner changes](docs/outliner-change-timeline.md)
+
 Plain-file notes for Mac and iPhone: daily notes, wiki links, local search,
 and optional AI over your own Markdown.
 
 [![Release](https://img.shields.io/github/v/release/team-reflect/reflect-open)](https://github.com/team-reflect/reflect-open/releases/latest)
 [![CI](https://github.com/team-reflect/reflect-open/actions/workflows/ci.yml/badge.svg)](https://github.com/team-reflect/reflect-open/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-See the fork's [Outliner change timeline](docs/outliner-change-timeline.md).
 
 Reflect is an open-source note-taking app built around a folder of Markdown
 files. It opens to today's note, lets `[[wiki links]]` connect people,

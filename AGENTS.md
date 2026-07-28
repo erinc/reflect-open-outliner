@@ -35,9 +35,9 @@ this document:
   work. This checkout is shared, so preserve and do not publish unrelated local
   commits made by the user or another agent.
 - After a major product or architecture change on `codex/outliner-foundation`,
-  update `docs/outliner-change-timeline.md` in the same change. Add a dated,
-  reader-focused summary and links to the relevant commits; omit routine
-  maintenance and minor fixes.
+  update `docs/outliner-change-timeline.md` in the same change. Keep it as
+  succinct, reader-focused bullets organized by feature or behavior, with links
+  to the relevant commits. Omit dates, routine maintenance, and minor fixes.
 
 Configure the local safety defaults once:
 
