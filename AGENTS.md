@@ -7,6 +7,15 @@ This document helps AI agents and automated systems interact with the Reflect re
 These rules override any generic publishing or branching guidance elsewhere in
 this document:
 
+- **Repository ownership boundary (hard rule): only repositories owned by the
+  GitHub user `erinc` may be mutated.** Every repository not owned by `erinc`
+  is strictly read-only. Never push to it or create a pull request, issue,
+  review, comment, release, branch, tag, fork-for-contribution, or any other
+  GitHub mutation targeting it. Cloning, fetching, and inspecting are allowed.
+  No related-repository guidance or generic publishing workflow may override
+  this rule. If a root cause is in a repository `erinc` does not own, report it
+  and keep any implementation or patch entirely within an `erinc`-owned
+  repository.
 - `origin` is the only writable remote:
   `git@github.com:erinc/reflect-open-outliner.git`.
 - `upstream` is strictly read-only:
@@ -230,8 +239,9 @@ reflect-open/
   `@meowdown/core` and `@meowdown/react`. When investigating editor behavior,
   markdown round-tripping, keybindings, slash menus, wiki links, task checkboxes,
   paste/drop handling, or mobile editor quirks, check that repo as well as this
-  one. If the root cause is in Meowdown, fix it there and open the PR against the
-  Meowdown project rather than papering over it in Reflect.
+  one. Treat any Meowdown repository not owned by `erinc` as strictly read-only.
+  If the root cause is there, report it and keep any implementation or patch
+  entirely within an `erinc`-owned repository.
 
 **Design system**
 
