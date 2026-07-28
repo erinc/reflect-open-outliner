@@ -204,6 +204,7 @@ describe('Sidebar', () => {
     // Active like every other row whose route is current — until the birth
     // rename moves the note onto a title slug.
     await expect.element(newNote).toHaveAttribute('aria-current', 'page')
+    expect(newNote.element().querySelector('kbd')).toBeNull()
 
     await newNote.click()
     await vi.waitFor(() =>

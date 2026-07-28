@@ -3,7 +3,6 @@ import { Lock } from 'lucide-react'
 import { PinIcon } from '@/components/icons/pin-icon'
 import { useNoteRow } from '@/hooks/use-note-row'
 import { usePinnedNotes } from '@/hooks/use-pinned-notes'
-import { keybindingFor } from '@/lib/commands/app-commands'
 import { toggleNotePinned } from '@/lib/note-pin'
 import { toggleNotePrivate } from '@/lib/note-private'
 import { useOptimisticPinToggle } from '@/lib/notes/use-optimistic-pin-toggle'
@@ -18,12 +17,6 @@ interface NoteActionsSectionProps {
   /** Whether this context can offer deleting the note. Daily sidebars leave this off. */
   showTrash?: boolean
 }
-
-// Derived from the command definitions so the hints can never drift from the
-// real bindings (the same contract as the Today hint).
-const PIN_KEYBINDING = keybindingFor('note.togglePin')
-const PRIVATE_KEYBINDING = keybindingFor('note.togglePrivate')
-const GIST_KEYBINDING = keybindingFor('note.publishGist')
 
 /**
  * "Note actions" as a context-sidebar section: mouse-reachable counterparts
@@ -51,7 +44,6 @@ export function NoteActionsSection({
         icon={<PinIcon width={20} height={20} />}
         labels={{ active: 'Un-pin this note', inactive: 'Pin this note' }}
         failureLabel="Updating pin"
-        keybinding={PIN_KEYBINDING}
         applyOptimistic={applyOptimisticPin}
         onFailure={invalidateOptimisticPin}
       />
@@ -65,10 +57,9 @@ export function NoteActionsSection({
           inactive: 'Lock note',
         }}
         failureLabel="Updating privacy"
-        keybinding={PRIVATE_KEYBINDING}
         tooltip="Locks this note out of AI. Backup and sync still include it."
       />
-      <NoteGistAction path={path} keybinding={GIST_KEYBINDING} />
+      <NoteGistAction path={path} />
       {showTrash ? <NoteTrashAction path={path} /> : null}
     </SidebarSection>
   )

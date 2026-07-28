@@ -28,7 +28,6 @@ import { useSync, type BackupState } from '@/providers/sync-provider'
 import { useRouter } from '@/routing/router'
 
 const MENU_ITEM_CLASS = 'gap-2 px-2 py-1.5 text-[13px] text-text-secondary'
-const SETTINGS_BINDING = keybindingFor('settings.open')
 
 function graphSwitchBindingFor(index: number): string | null {
   // Recent rows are zero-based; `graph.switchN` commands and keycaps are one-based.
@@ -214,9 +213,7 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
             <Settings aria-hidden strokeWidth={1.75} className="size-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
-          Settings {SETTINGS_BINDING && <ShortcutKeys binding={SETTINGS_BINDING} />}
-        </TooltipContent>
+        <TooltipContent>Settings</TooltipContent>
       </Tooltip>
     </div>
   )

@@ -4,10 +4,8 @@ import { dailyDatesInRange, hasBridge, type WeekStartDay } from '@reflect/core'
 import { CalendarIcon } from '@/components/icons/calendar-icon'
 import { ChevronLeftIcon } from '@/components/icons/chevron-left-icon'
 import { ChevronRightIcon } from '@/components/icons/chevron-right-icon'
-import { ShortcutKeys } from '@/components/shortcut-keys'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useNoteLinkNavigation } from '@/hooks/use-note-link-navigation'
-import { keybindingFor } from '@/lib/commands/app-commands'
 import { formatDayLabel } from '@/lib/dates'
 import {
   addMonths,
@@ -34,7 +32,6 @@ function toWeekStartsOn(weekStartDay: WeekStartDay): 0 | 1 {
   return weekStartDay === 'sunday' ? 0 : 1
 }
 
-const TODAY_BINDING = keybindingFor('nav.today')
 
 const HEADER_BUTTON_CLASS =
   'cursor-default rounded-md transition-colors duration-100 hover:bg-surface-hover hover:text-text'
@@ -104,9 +101,7 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
                 <CalendarIcon />
               </button>
             </TooltipTrigger>
-            <TooltipContent>
-              Jump to Today {TODAY_BINDING && <ShortcutKeys binding={TODAY_BINDING} />}
-            </TooltipContent>
+            <TooltipContent>Jump to Today</TooltipContent>
           </Tooltip>
           <button
             type="button"

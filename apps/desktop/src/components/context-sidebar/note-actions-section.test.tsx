@@ -17,16 +17,11 @@ const operationFail = vi.hoisted(() => vi.fn())
 const startOperation = vi.hoisted(() =>
   vi.fn(() => ({ progress: vi.fn(), done: vi.fn(), fail: operationFail })),
 )
-const isApplePlatform = vi.hoisted(() => vi.fn(() => false))
 vi.mock('@reflect/core', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@reflect/core')>()),
   hasBridge: () => true,
   getPinnedNotes,
   getNote,
-}))
-vi.mock('@/lib/keybindings', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/keybindings')>()),
-  isApplePlatform,
 }))
 vi.mock('@/lib/note-pin', () => ({ toggleNotePinned }))
 vi.mock('@/lib/note-private', () => ({ toggleNotePrivate }))
@@ -59,7 +54,6 @@ beforeEach(() => {
   deleteOpenNote.mockReset().mockResolvedValue(undefined)
   startOperation.mockClear()
   operationFail.mockClear()
-  isApplePlatform.mockReturnValue(false)
 })
 
 function noteRow(path: string, isPrivate: boolean, title = 'A') {
@@ -67,11 +61,10 @@ function noteRow(path: string, isPrivate: boolean, title = 'A') {
 }
 
 describe('NoteActionsSection pin toggle', () => {
-  it('offers Pin this note with the platform-formatted hint and toggles on click', async () => {
+  it('offers Pin this note without a shortcut hint and toggles on click', async () => {
     const view = await renderSection('notes/a.md')
     const button = view.getByRole('button', { name: /Pin this note/ })
-    // The mocked platform is non-Apple, so Mod renders as Ctrl.
-    expect(button.element().textContent).toContain('CtrlO')
+    expect(button.element().querySelector('kbd')).toBeNull()
     await userEvent.click(button)
     expect(toggleNotePinned).toHaveBeenCalledWith('notes/a.md', 7)
     await view.unmount()

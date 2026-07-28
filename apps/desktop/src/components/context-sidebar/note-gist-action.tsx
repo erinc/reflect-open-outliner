@@ -1,6 +1,5 @@
 import { useState, type ReactElement } from 'react'
 import { CloudOff, CloudUpload } from 'lucide-react'
-import { ShortcutKeys } from '@/components/shortcut-keys'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useNoteRowOverlay } from '@/hooks/note-row-overlay'
 import { useGithubConnected } from '@/hooks/use-github-connected'
@@ -11,8 +10,6 @@ import { useGraph } from '@/providers/graph-provider'
 interface NoteGistActionProps {
   /** Graph-relative path of the note the action operates on. */
   path: string
-  /** Keybinding hint, from the matching command definition. */
-  keybinding?: string | null
 }
 
 /**
@@ -23,7 +20,7 @@ interface NoteGistActionProps {
  * URL section owns the update action, including the stale-body nudge from the
  * index. Failures and success state surface through the operations status line.
  */
-export function NoteGistAction({ path, keybinding = null }: NoteGistActionProps): ReactElement | null {
+export function NoteGistAction({ path }: NoteGistActionProps): ReactElement | null {
   const { graph } = useGraph()
   const connected = useGithubConnected()
   const row = useNoteRow(path)
@@ -92,9 +89,6 @@ export function NoteGistAction({ path, keybinding = null }: NoteGistActionProps)
             <Icon size={14} aria-hidden />
           </span>
           <span className="min-w-0 flex-1 truncate text-xs font-medium">{label}</span>
-          {keybinding !== null ? (
-            <ShortcutKeys binding={keybinding} className="invisible group-hover:visible" />
-          ) : null}
         </button>
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>

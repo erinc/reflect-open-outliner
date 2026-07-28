@@ -4,7 +4,6 @@ import { ListChecks, MessageSquare, SquarePen } from 'lucide-react'
 import { ListIcon } from '@/components/icons/list-icon'
 import { PencilIcon } from '@/components/icons/pencil-icon'
 import { usePinnedNotes } from '@/hooks/use-pinned-notes'
-import { keybindingFor } from '@/lib/commands/app-commands'
 import { runCommand } from '@/lib/commands/registry'
 import { useToday } from '@/lib/use-today'
 import type { CommandContext } from '@/lib/commands/types'
@@ -62,7 +61,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
           <SidebarItem
             icon={<PencilIcon className="shrink-0" />}
             label="Daily notes"
-            binding={keybindingFor('nav.today') ?? undefined}
             active={(route.kind === 'today' || route.kind === 'daily') && !hasActivePinnedNote}
             onClick={() => void runCommand('nav.today', context)}
           />
@@ -73,7 +71,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
               </span>
             }
             label="New note"
-            binding={keybindingFor('note.new') ?? undefined}
             // Active while the open note is still on its ULID placeholder
             // name — the state this row creates. The birth rename onto a
             // title slug is also what hands the note off to ordinary
@@ -84,7 +81,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
           <SidebarItem
             icon={<ListIcon className="shrink-0" />}
             label="All notes"
-            binding={keybindingFor('nav.allNotes') ?? undefined}
             // A named note lives in the All Notes collection, so keep this row
             // lit while editing one. A brand-new note is still an untitled
             // placeholder, though, and the "New note" row above owns that
@@ -102,7 +98,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
               </span>
             }
             label="Tasks"
-            binding={keybindingFor('nav.tasks') ?? undefined}
             active={route.kind === 'tasks'}
             onClick={() => void runCommand('nav.tasks', context)}
           />
@@ -113,7 +108,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
               </span>
             }
             label="Chat"
-            binding={keybindingFor('chat.open') ?? undefined}
             active={route.kind === 'chat'}
             onClick={() => void runCommand('chat.open', context)}
           />

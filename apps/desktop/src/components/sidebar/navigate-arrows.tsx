@@ -1,12 +1,7 @@
 import type { ReactElement } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { ShortcutKeys } from '@/components/shortcut-keys'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { keybindingFor } from '@/lib/commands/app-commands'
 import { useRouter } from '@/routing/router'
-
-const BACK_BINDING = keybindingFor('history.back')
-const FORWARD_BINDING = keybindingFor('history.forward')
 
 const BUTTON_CLASS =
   'rounded-md p-1 text-text-muted transition-colors duration-100 ' +
@@ -43,9 +38,7 @@ export function NavigateArrows(): ReactElement {
             </button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>
-          Go back {BACK_BINDING && <ShortcutKeys binding={BACK_BINDING} />}
-        </TooltipContent>
+        <TooltipContent>Go back</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -61,9 +54,7 @@ export function NavigateArrows(): ReactElement {
             </button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>
-          Go forward {FORWARD_BINDING && <ShortcutKeys binding={FORWARD_BINDING} />}
-        </TooltipContent>
+        <TooltipContent>Go forward</TooltipContent>
       </Tooltip>
     </div>
   )

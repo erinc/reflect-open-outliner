@@ -1,6 +1,5 @@
 import { useState, type ReactElement, type ReactNode } from 'react'
 import { errorMessage } from '@reflect/core'
-import { ShortcutKeys } from '@/components/shortcut-keys'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { startOperation } from '@/lib/operations'
 import { cn } from '@/lib/utils'
@@ -19,8 +18,6 @@ interface NoteToggleActionProps {
   labels: { active: string; inactive: string }
   /** Operation label used when the frontmatter write fails. */
   failureLabel: string
-  /** Keybinding hint, from the matching command definition. */
-  keybinding?: string | null
   /** Optional tooltip explaining the flag's meaning. */
   tooltip?: string
   /** Optional side-effect for surfaces that also expose this flag elsewhere. */
@@ -54,7 +51,6 @@ export function NoteToggleAction({
   icon,
   labels,
   failureLabel,
-  keybinding = null,
   tooltip,
   applyOptimistic,
   onFailure,
@@ -114,9 +110,6 @@ export function NoteToggleAction({
       <span className="min-w-0 flex-1 truncate text-xs font-medium">
         {isActive ? labels.active : labels.inactive}
       </span>
-      {keybinding !== null ? (
-        <ShortcutKeys binding={keybinding} className="invisible group-hover:visible" />
-      ) : null}
     </button>
   )
 
