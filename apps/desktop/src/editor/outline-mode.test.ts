@@ -5,6 +5,7 @@ import { EditorState, TextSelection } from '@prosekit/pm/state'
 import {
   canStrictIndent,
   isSelectionInListKind,
+  joinOutlineItemBackward,
   normalizeOutlineTransaction,
 } from './outline-mode'
 
@@ -138,5 +139,25 @@ describe('canStrictIndent', () => {
     expect(
       canStrictIndent(stateAt('- parent\n  - first\n  - second', 'second')),
     ).toBe(true)
+  })
+})
+
+describe('joinOutlineItemBackward', () => {
+  it('merges a sibling and places the caret at the join', () => {
+    const doc = markdownToDoc('- first\n- second')
+    const state = EditorState.create({
+      doc,
+      selection: TextSelection.create(doc, textPosition(doc, 'second') - 1),
+    })
+    let nextState: EditorState | null = null
+
+    const handled = joinOutlineItemBackward(state, (transaction) => {
+      nextState = state.apply(transaction)
+    })
+
+    expect(handled).toBe(true)
+    expect(nextState).not.toBeNull()
+    expect(docToMarkdown(nextState!.doc)).toBe('- firstsecond\n')
+    expect(nextState!.selection.from).toBe(textPosition(nextState!.doc, 'first') + 4)
   })
 })

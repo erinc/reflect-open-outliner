@@ -4,6 +4,7 @@ import type { ProseMirrorNode } from '@prosekit/pm/model'
 import {
   Plugin,
   Selection,
+  TextSelection,
   type Command,
   type EditorState,
   type Transaction,
@@ -152,6 +153,67 @@ function isSelectionInRootItem(state: EditorState): boolean {
   )
 }
 
+/** Merge the current outline sibling into the preceding one at its text start. */
+export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
+  const context = nearestListContext(state)
+  const { $from } = state.selection
+  const currentBlock = context?.node.firstChild
+  const atBlockStart =
+    view?.endOfTextblock('backward', state) ?? $from.parentOffset === 0
+  if (
+    !state.selection.empty ||
+    context === null ||
+    currentBlock === null ||
+    currentBlock === undefined ||
+    !atBlockStart ||
+    !$from.parent.isTextblock
+  ) {
+    return false
+  }
+
+  const parentDepth = context.depth - 1
+  const index = $from.index(parentDepth)
+  const previousItem =
+    index > 0 ? $from.node(parentDepth).child(index - 1) : null
+  const previousBlock = previousItem?.firstChild
+  if (
+    previousItem?.type.name !== 'list' ||
+    previousBlock === null ||
+    previousBlock === undefined ||
+    !previousBlock.isTextblock
+  ) {
+    return false
+  }
+
+  if (dispatch !== undefined) {
+    const mergedBlock = previousBlock.copy(
+      previousBlock.content.append(currentBlock.content),
+    )
+    const mergedChildren = [mergedBlock]
+    for (let childIndex = 1; childIndex < previousItem.childCount; childIndex += 1) {
+      mergedChildren.push(previousItem.child(childIndex))
+    }
+    for (let childIndex = 1; childIndex < context.node.childCount; childIndex += 1) {
+      mergedChildren.push(context.node.child(childIndex))
+    }
+
+    const from = $from.before(context.depth) - previousItem.nodeSize
+    const to = $from.after(context.depth)
+    const mergedItem = previousItem.type.createChecked(
+      previousItem.attrs,
+      mergedChildren,
+    )
+    const transaction = state.tr.replaceWith(from, to, mergedItem)
+    const joinPosition = from + 2 + previousBlock.content.size
+    dispatch(
+      transaction
+        .setSelection(TextSelection.create(transaction.doc, joinPosition))
+        .scrollIntoView(),
+    )
+  }
+  return true
+}
+
 const deleteEmptyOutlineItem: Command = (state, dispatch) => {
   const context = nearestListContext(state)
   if (
@@ -237,7 +299,13 @@ export function OutlineMode({ allowTitle }: OutlineModeProps): ReactElement {
   )
   const keymap = useMemo(
     () => ({
-      Backspace: deleteEmptyOutlineItem,
+      Backspace: (
+        state: EditorState,
+        dispatch?: (transaction: Transaction) => void,
+        view?: Parameters<Command>[2],
+      ) =>
+        deleteEmptyOutlineItem(state, dispatch) ||
+        joinOutlineItemBackward(state, dispatch, view),
       Enter: insertEmptyRootSibling,
       Tab: protectInvalidIndent,
       'Shift-Tab': protectRootOutdent,

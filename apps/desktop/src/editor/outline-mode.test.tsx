@@ -270,6 +270,17 @@ describe('NoteEditor outline mode', () => {
     })
   })
 
+  it('joins a sibling at its start and leaves the caret at the join', async () => {
+    const handle = await renderOutline('- first\n- second')
+
+    await userEvent.keyboard('{Meta>}{ArrowLeft}{/Meta}')
+    await userEvent.keyboard('{Backspace}!')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- first!second\n')
+    })
+  })
+
   it('deletes a cleared first child and moves the caret to its parent end', async () => {
     const handle = await renderOutline('- parent\n  - child')
 
