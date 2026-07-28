@@ -244,7 +244,12 @@ function focusPositionFromMarker(view: EditorView, event: Event): number | null 
 }
 
 function handleMarkerPointerDown(view: EditorView, event: MouseEvent): boolean {
-  if (event.button !== 0 || event.shiftKey) {
+  if (
+    event.button !== 0 ||
+    (!event.metaKey && !event.ctrlKey) ||
+    event.shiftKey ||
+    event.altKey
+  ) {
     return false
   }
   const position = focusPositionFromMarker(view, event)
@@ -316,9 +321,8 @@ function createOutlineFocusPlugin(): Plugin<OutlineFocusState> {
     },
     view: (view) => {
       // Meowdown owns a bubbling mousedown handler for folding. Focus is the
-      // outliner's primary plain-click action, so claim pointerdown in capture
-      // phase before that handler; Shift-click deliberately falls through to
-      // folding. Pointer events cover mouse, pen, and the iOS touch surface.
+      // outliner's modified-click action, so claim pointerdown in capture phase
+      // before that handler. Plain clicks deliberately fall through to folding.
       let suppressClickThrough = false
       let suppressionTimer: ReturnType<typeof setTimeout> | undefined
       let pointerId: number | null = null
@@ -480,8 +484,9 @@ const zoomOut: Command = (state, dispatch) => {
 /**
  * Session-local Workflowy-style block focus.
  *
- * Clicking a bullet focuses its subtree. Breadcrumbs, Escape, and Mod-Shift-.
- * navigate focus. Stable URLs await portable Markdown IDs for outline items.
+ * Mod-clicking a bullet focuses its subtree. Breadcrumbs, Escape, and
+ * Mod-Shift-. navigate focus. Stable URLs await portable Markdown IDs for
+ * outline items.
  */
 export function OutlineFocus(): null {
   const extension = useMemo(() => definePlugin(createOutlineFocusPlugin()), [])

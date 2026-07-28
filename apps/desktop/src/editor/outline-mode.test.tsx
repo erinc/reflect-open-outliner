@@ -2,10 +2,28 @@ import { createRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
+import { fireEvent } from '@/test-utils/fire-event'
 import '@/test-utils/locator'
 import { NoteEditor, type NoteEditorHandle } from './note-editor'
 
 const editorRoot = page.locate('.ProseMirror')
+
+function commandClick(element: HTMLElement): void {
+  fireEvent.pointerDown(element, {
+    button: 0,
+    metaKey: true,
+    pointerId: 1,
+  })
+  element.dispatchEvent(
+    new PointerEvent('pointerup', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: true,
+      pointerId: 1,
+    }),
+  )
+  fireEvent.click(element, { metaKey: true })
+}
 
 async function renderOutline(
   markdown: string,
@@ -91,7 +109,7 @@ describe('NoteEditor outline mode', () => {
       throw new Error('outline markers were not rendered')
     }
 
-    await userEvent.click(parentMarker)
+    commandClick(parentMarker)
 
     await vi.waitFor(() => {
       expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(true)
@@ -107,7 +125,7 @@ describe('NoteEditor outline mode', () => {
     expect(getComputedStyle(items[4]!).display).toBe('none')
 
     await userEvent.click(page.getByRole('button', { name: 'All blocks' }))
-    await userEvent.click(childMarker)
+    commandClick(childMarker)
 
     await vi.waitFor(() => {
       expect(
@@ -127,6 +145,65 @@ describe('NoteEditor outline mode', () => {
     })
     expect(getComputedStyle(items[3]!).display).not.toBe('none')
     expect(getComputedStyle(items[4]!).display).not.toBe('none')
+  })
+
+  it('folds a bullet on plain click and focuses it on Command-click', async () => {
+    await renderOutline('- parent\n  - child\n- sibling')
+    const parent = editorRoot
+      .element()
+      .querySelector<HTMLElement>('.prosemirror-flat-list')
+    const parentMarker = parent?.querySelector<HTMLElement>(
+      ':scope > .list-marker',
+    )
+    if (
+      parent === null ||
+      parent === undefined ||
+      parentMarker === null ||
+      parentMarker === undefined
+    ) {
+      throw new Error('parent marker was not rendered')
+    }
+
+    await userEvent.click(parentMarker)
+
+    await vi.waitFor(() => {
+      expect(
+        editorRoot
+          .element()
+          .querySelector('.prosemirror-flat-list')
+          ?.hasAttribute('data-list-collapsed'),
+      ).toBe(true)
+    })
+    expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(false)
+
+    const collapsedMarker = editorRoot
+      .element()
+      .querySelector<HTMLElement>('.prosemirror-flat-list > .list-marker')
+    if (collapsedMarker === null) {
+      throw new Error('collapsed parent marker was not rendered')
+    }
+    await userEvent.click(collapsedMarker)
+
+    await vi.waitFor(() => {
+      expect(
+        editorRoot
+          .element()
+          .querySelector('.prosemirror-flat-list')
+          ?.hasAttribute('data-list-collapsed'),
+      ).toBe(false)
+    })
+
+    const expandedMarker = editorRoot
+      .element()
+      .querySelector<HTMLElement>('.prosemirror-flat-list > .list-marker')
+    if (expandedMarker === null) {
+      throw new Error('expanded parent marker was not rendered')
+    }
+    commandClick(expandedMarker)
+
+    await vi.waitFor(() => {
+      expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(true)
+    })
   })
 
   it('focuses the caret item with the keyboard and uses Escape to zoom up', async () => {
@@ -165,7 +242,7 @@ describe('NoteEditor outline mode', () => {
       throw new Error('parent marker was not rendered')
     }
 
-    await userEvent.click(parentMarker)
+    commandClick(parentMarker)
     handle.setSelection('end')
     await userEvent.keyboard('{Enter}child')
 
