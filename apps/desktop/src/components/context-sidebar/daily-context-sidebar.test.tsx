@@ -97,6 +97,21 @@ describe('DailyContextSidebar calendar header', () => {
 })
 
 describe('DailyContextSidebar calendar', () => {
+  it('uses a subtle selected-day treatment in light and dark themes', async () => {
+    const view = await renderSidebar('2026-06-09')
+    const selectedDay = page.getByRole('button', {
+      name: formatDayLabel('2026-06-09', 'mdy'),
+    })
+    const background = selectedDay.element().querySelector('[aria-hidden]')
+    const number = selectedDay.element().querySelector('span:last-child')
+
+    expect(background?.classList.contains('bg-accent/10')).toBe(true)
+    expect(background?.classList.contains('dark:bg-accent/20')).toBe(true)
+    expect(number?.classList.contains('font-semibold')).toBe(true)
+    expect(number?.classList.contains('text-accent')).toBe(true)
+    await view.unmount()
+  })
+
   it('marks days that have a daily note and navigates on day click', async () => {
     dailyDatesInRange.mockResolvedValue(['2026-06-05'])
     const view = await renderSidebar('2026-06-09')

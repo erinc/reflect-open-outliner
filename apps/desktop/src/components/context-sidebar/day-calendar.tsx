@@ -38,8 +38,8 @@ const HEADER_BUTTON_CLASS =
 
 /**
  * Compact month calendar in the old app's visual idiom: weeks start per the
- * week-start setting, the selected day sits on a 32px inverse square (today
- * on a grey one), and days that already have a daily note carry a dot marker
+ * week-start setting, the selected day sits on a softly tinted 32px square
+ * (today on a grey one), and days that already have a daily note carry a dot marker
  * revealed while the pointer is over the calendar (an indexed `dailyDate`
  * row — daily files exist only once written, so a row means real content).
  * Clicking a day navigates to it; modifier-clicking opens that daily note in
@@ -152,7 +152,9 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
                         aria-hidden
                         className={cn(
                           'absolute left-1/2 top-1/2 -ml-4 -mt-4 block h-8 w-8 rounded-md',
-                          isSelected ? 'bg-surface-inverse' : 'bg-surface-active',
+                          isSelected
+                            ? 'bg-accent/10 dark:bg-accent/20'
+                            : 'bg-surface-active',
                         )}
                       />
                     ) : null}
@@ -168,7 +170,7 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
                     <span
                       className={cn(
                         'relative block tabular-nums',
-                        isSelected && 'font-bold text-text-on-inverse',
+                        isSelected && 'font-semibold text-accent',
                       )}
                     >
                       {Number(cell.date.slice(8, 10))}
