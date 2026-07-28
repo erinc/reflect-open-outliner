@@ -1,23 +1,20 @@
 /* ============================================================
    Reflect — Typography tokens
    ------------------------------------------------------------
-   Inter Variable keeps app chrome tight and functional. Reading
-   surfaces use the native Apple system face where available —
-   Reflect is a writing tool, so chrome text is small (12–14px)
-   and the user's prose is the hero.
+   Native system typography keeps the app familiar, fast, and free
+   of bundled font assets. Reflect is a writing tool, so chrome text
+   is small (12–14px) and the user's prose is the hero.
    The marketing site is the opposite: oversized, tight display
    headings on the dark canvas.
    ============================================================ */
 
 :root {
   /* Families */
-  --font-sans: 'InterVariable', ui-sans-serif, system-ui, -apple-system,
-               'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco,
                Consolas, monospace;
-  /* Native San Francisco on Apple platforms; Inter elsewhere */
-  --font-reading: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
-                  'InterVariable', ui-sans-serif, system-ui, sans-serif;
+  --font-reading: var(--font-sans);
   /* Keyboard-shortcut glyphs (⌘ ⌥ ⇧) — system-ui renders them cleanly */
   --font-shortcut: system-ui, ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -53,7 +50,7 @@
 
   /* ---- Letter spacing ------------------------------------ */
   --tracking-tight:  -0.02em;  /* display / large headings      */
-  --tracking-snug:   -0.011em; /* default Inter optical setting */
+  --tracking-snug:   -0.011em; /* subtle tightening for compact UI */
   --tracking-normal: 0;
   --tracking-wide:   0.04em;   /* small caps-y section labels   */
 }

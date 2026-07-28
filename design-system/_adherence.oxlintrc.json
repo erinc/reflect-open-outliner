@@ -38,8 +38,8 @@
         "message": "Raw px value — use a design-system spacing token via var()."
       },
       {
-        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:InterVariable))/i]",
-        "message": "Font not provided by the design system. Available: InterVariable."
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!var\\(--font-(?:sans|mono|reading|shortcut)\\))/i]",
+        "message": "Font not provided by the design system. Use a design-system font token."
       },
       {
         "selector": "JSXOpeningElement[name.name='Avatar'] > JSXAttribute > JSXIdentifier[name!=/^(?:src|name|size|graphColor|style|key|ref|className|style|children)$/]",
@@ -387,8 +387,6 @@
       "--duration-base": "other",
       "--duration-slow": "other"
     },
-    "fontFamilies": [
-      "InterVariable"
-    ]
+    "fontFamilies": []
   }
 }

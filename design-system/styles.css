@@ -1,10 +1,9 @@
 /* ============================================================
    Reflect Design System — global entry point
    Consumers link THIS file. It is an @import manifest only;
-   every token, font and base rule lives in the imported files.
+   every token and base rule lives in the imported files.
    ============================================================ */
 
-@import './tokens/fonts.css';
 @import './tokens/colors.css';
 @import './tokens/typography.css';
 @import './tokens/spacing.css';
@@ -29,9 +28,4 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-/* Inter optical sizing + sensible feature defaults */
-* {
-  font-optical-sizing: auto;
 }
