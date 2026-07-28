@@ -91,6 +91,9 @@ describe('NoteEditor outline mode', () => {
     expect(getComputedStyle(items[1]!, '::after').content).toBe('""')
     expect(getComputedStyle(items[2]!, '::after').content).toBe('none')
     expect(getComputedStyle(items[3]!, '::after').content).toBe('none')
+    const marker = items[0]?.querySelector<HTMLElement>(':scope > .list-marker')
+    expect(marker).toBeDefined()
+    expect(getComputedStyle(marker!).cursor).toBe('pointer')
   })
 
   it('focuses a clicked bullet subtree and zooms out through breadcrumbs', async () => {

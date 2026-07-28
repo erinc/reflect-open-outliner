@@ -364,7 +364,7 @@ html:root {
 .reflect-outline-editor
   .prosemirror-flat-list[data-list-kind='bullet']
   > .list-marker {
-  cursor: zoom-in;
+  cursor: pointer;
 }
 
 /* Focused-block view keeps the complete ProseMirror document mounted and
