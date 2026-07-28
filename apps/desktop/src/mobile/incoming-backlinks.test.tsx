@@ -145,7 +145,7 @@ describe('IncomingBacklinks', () => {
     await view.unmount()
   })
 
-  it('collapses snippets but keeps source titles on header toggle, for the session', async () => {
+  it('collapses the entire source list on header toggle, for the session', async () => {
     getBacklinksWithContext.mockResolvedValue([
       {
         sourcePath: 'notes/meeting.md',
@@ -162,7 +162,7 @@ describe('IncomingBacklinks', () => {
 
     await userEvent.click(header)
     await expect.element(header).toHaveAttribute('aria-expanded', 'false')
-    await expect.element(view.getByText('Meeting Notes')).toBeVisible()
+    await expect.element(view.getByText('Meeting Notes')).not.toBeInTheDocument()
     await expect.element(view.getByText(/discussed/)).not.toBeInTheDocument()
     await view.unmount()
 
@@ -204,7 +204,7 @@ describe('IncomingBacklinks', () => {
     await view.unmount()
   })
 
-  it('lets one group be peeked at via its always-visible chevron after a header collapse', async () => {
+  it('hides source titles and references when the header is collapsed', async () => {
     getBacklinksWithContext.mockResolvedValue([
       {
         sourcePath: 'notes/meeting.md',
@@ -226,16 +226,13 @@ describe('IncomingBacklinks', () => {
     const header = view.getByRole('button', { name: /Incoming backlinks \(2\)/ })
     await expect.element(header).toBeVisible()
     await userEvent.click(header)
+    await expect.element(view.getByText('Meeting Notes')).not.toBeInTheDocument()
+    await expect.element(view.getByText('Planning')).not.toBeInTheDocument()
     await expect.element(view.getByText(/discussed/)).not.toBeInTheDocument()
     await expect.element(view.getByText(/ship the/)).not.toBeInTheDocument()
 
-    await userEvent.click(
-      view.getByRole('button', { name: 'Expand references from Meeting Notes' }),
-    )
-    await expect.element(view.getByText(/discussed/)).toBeVisible()
-    await expect.element(view.getByText(/ship the/)).not.toBeInTheDocument()
-
     await userEvent.click(header)
+    await expect.element(view.getByText('Meeting Notes')).toBeVisible()
     await expect.element(view.getByText(/ship the/)).toBeVisible()
     await view.unmount()
   })

@@ -185,7 +185,7 @@ describe('BacklinksPanel', () => {
     await view.unmount()
   })
 
-  it('collapses snippets but keeps source titles on header toggle, for the session', async () => {
+  it('collapses the entire source list on header toggle, for the session', async () => {
     getBacklinksWithContext.mockResolvedValue([
       {
         sourcePath: 'notes/meeting.md',
@@ -202,7 +202,7 @@ describe('BacklinksPanel', () => {
 
     await header.click()
     await expect.element(header).toHaveAttribute('aria-expanded', 'false')
-    await expect.element(view.getByText('Meeting Notes')).toBeInTheDocument()
+    expect(view.getByText('Meeting Notes').query()).toBeNull()
     expect(view.getByText(/discussed/).query()).toBeNull()
     await view.unmount()
 
@@ -273,7 +273,7 @@ describe('BacklinksPanel', () => {
     await view.unmount()
   })
 
-  it('lets one group be peeked at after the header collapse (old Reflect behavior)', async () => {
+  it('hides source titles and references when the header is collapsed', async () => {
     getBacklinksWithContext.mockResolvedValue([
       {
         sourcePath: 'notes/meeting.md',
@@ -294,14 +294,13 @@ describe('BacklinksPanel', () => {
 
     const header = view.getByRole('button', { name: /Incoming backlinks \(2\)/ })
     await header.click()
+    expect(view.getByText('Meeting Notes').query()).toBeNull()
+    expect(view.getByText('Planning').query()).toBeNull()
     expect(view.getByText(/discussed/).query()).toBeNull()
     expect(view.getByText(/ship the/).query()).toBeNull()
 
-    await view.getByRole('button', { name: 'Expand references from Meeting Notes' }).click()
-    await expect.element(view.getByText(/discussed/)).toBeInTheDocument()
-    expect(view.getByText(/ship the/).query()).toBeNull()
-
     await header.click()
+    await expect.element(view.getByText('Meeting Notes')).toBeInTheDocument()
     await expect.element(view.getByText(/ship the/)).toBeInTheDocument()
     await view.unmount()
   })
