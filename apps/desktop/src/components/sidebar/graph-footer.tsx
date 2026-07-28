@@ -54,11 +54,10 @@ function backupDot(backup: BackupState): { className: string; label: string } | 
 }
 
 /**
- * The sidebar footer: the graph's color swatch and name on the left — a
- * dropdown menu for switching to a recent graph, recoloring this graph, or
- * the OS folder picker. The swatch pulses while the graph indexes; a small
- * dot reports backup state. The menu content matches the trigger width, so
- * it stays inset from the sidebar edges.
+ * The sidebar footer: the graph name on the left opens a dropdown menu for
+ * switching to a recent graph, recoloring this graph, or the OS folder
+ * picker. A small dot reports backup state. The menu content matches the
+ * trigger width, so it stays inset from the sidebar edges.
  */
 interface GraphFooterProps {
   graph: GraphInfo
@@ -84,12 +83,8 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
               <Button
                 type="button"
                 variant="ghost"
-                className="group h-auto min-w-0 flex-1 justify-start gap-2.5 px-1.5 py-1 text-left"
+                className="group h-auto min-w-0 flex-1 justify-start gap-2.5 px-0 py-1 text-left"
               >
-                <GraphSwatch
-                  color={colorFor(graph.root)}
-                  className={cn('h-5 w-5', indexing && 'motion-safe:animate-pulse')}
-                />
                 <span className="min-w-0 truncate text-xs font-medium text-text-secondary transition-colors duration-100 group-hover:text-text">
                   {graph.name}
                 </span>

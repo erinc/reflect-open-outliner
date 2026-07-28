@@ -382,7 +382,9 @@ describe('Sidebar', () => {
   it('the graph footer switches to another recent graph', async () => {
     const { view } = await renderSidebar()
 
-    await view.getByRole('button', { name: /Notes/ }).click()
+    const graphTrigger = view.getByRole('button', { name: /Notes/ })
+    expect(graphTrigger.element().querySelector('[style]')).toBeNull()
+    await graphTrigger.click()
     const work = page.getByRole('menuitem', { name: 'Work' })
     await expect.element(work).toBeVisible()
     expect([...work.element().querySelectorAll('kbd')].map((keycap) => keycap.textContent)).toContain('2')
