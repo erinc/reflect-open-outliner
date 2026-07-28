@@ -1,5 +1,6 @@
 import type { ReactElement, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { hasMacosTitleBarOverlay } from '@/lib/window-chrome'
 
 interface AppShellProps {
   /** The workspace sidebar; omit to render the note pane edge-to-edge. */
@@ -55,7 +56,16 @@ export function AppShell({
         </aside>
       ) : null}
 
-      <main className="min-w-0 flex-1 overflow-hidden bg-surface">{children}</main>
+      <main
+        className={cn(
+          'min-w-0 flex-1 overflow-hidden bg-surface',
+          // Without the workspace sidebar, the main pane reaches the window's
+          // top-left corner and must clear the overlaid macOS traffic lights.
+          hasMacosTitleBarOverlay && 'pt-7',
+        )}
+      >
+        {children}
+      </main>
 
       {context ? (
         <aside
