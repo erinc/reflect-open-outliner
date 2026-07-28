@@ -39,10 +39,13 @@ function titleIndex(doc: ProseMirrorNode, allowTitle: boolean): number | null {
   }
   for (let index = 0; index < doc.childCount; index += 1) {
     const node = doc.child(index)
+    if (node.type.name === 'heading' && node.attrs['level'] === 1) {
+      return index
+    }
     if (isEmptyTextblock(node) || isEmptyOutlineItem(node)) {
       continue
     }
-    return node.type.name === 'heading' && node.attrs['level'] === 1 ? index : null
+    return null
   }
   return null
 }
@@ -53,7 +56,8 @@ function titleIndex(doc: ProseMirrorNode, allowTitle: boolean): number | null {
  * Every non-list body block, including an empty block, is wrapped in a
  * canonical bullet item. Empty outline items remain durable blocks, while
  * plain empty paragraphs cannot escape the outline. The first regular-note H1
- * remains the title.
+ * remains the title, including the empty H1 that seeds a new note before its
+ * title is typed.
  */
 export function normalizeOutlineTransaction(
   state: EditorState,

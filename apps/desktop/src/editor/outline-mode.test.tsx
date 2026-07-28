@@ -7,12 +7,16 @@ import { NoteEditor, type NoteEditorHandle } from './note-editor'
 
 const editorRoot = page.locate('.ProseMirror')
 
-async function renderOutline(markdown: string): Promise<NoteEditorHandle> {
+async function renderOutline(
+  markdown: string,
+  outlineTitle = false,
+): Promise<NoteEditorHandle> {
   const handleRef = createRef<NoteEditorHandle>()
   await render(
     <NoteEditor
       initialContent={markdown}
       outlineMode={true}
+      outlineTitle={outlineTitle}
       handleRef={handleRef}
     />,
   )
@@ -26,6 +30,16 @@ async function renderOutline(markdown: string): Promise<NoteEditorHandle> {
 }
 
 describe('NoteEditor outline mode', () => {
+  it('keeps a new regular note title outside the outline', async () => {
+    const handle = await renderOutline('#', true)
+
+    await userEvent.keyboard('Title{Enter}first{Enter}second')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('# Title\n\n- first\n- second\n')
+    })
+  })
+
   it('creates compact sibling items with Enter', async () => {
     const handle = await renderOutline('- first')
 
