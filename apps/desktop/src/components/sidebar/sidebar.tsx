@@ -16,7 +16,6 @@ import { GraphFooter } from './graph-footer'
 import { NavigateArrows } from './navigate-arrows'
 import { SidebarItem } from './sidebar-item'
 import { SidebarPinned } from './sidebar-pinned'
-import { SidebarSearch } from './sidebar-search'
 
 interface SidebarProps {
   graph: GraphInfo
@@ -26,7 +25,7 @@ interface SidebarProps {
 
 /**
  * The workspace sidebar, in the original app's shape: history arrows top
- * right, search, primary navigation with hover-revealed shortcut keycaps, the
+ * right, primary navigation with hover-revealed shortcut keycaps, the
  * Pinned shelf, and the graph switcher footer. Most nav rows run registered
  * commands so a binding and its behavior stay one definition; the Daily notes
  * row is a capture gesture like `Mod-D` — it asks the stream to focus today
@@ -59,12 +58,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
       </div>
 
       <div className="flex flex-none flex-col">
-        <div className="mt-1 flex items-center gap-1.5 px-4">
-          <div className="min-w-0 flex-1">
-            <SidebarSearch onOpen={() => context.openPalette()} />
-          </div>
-        </div>
-
         <nav aria-label="Primary" className="mt-6 space-y-1 px-4">
           <SidebarItem
             icon={<PencilIcon className="shrink-0" />}

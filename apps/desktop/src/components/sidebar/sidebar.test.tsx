@@ -239,10 +239,9 @@ describe('Sidebar', () => {
       .not.toHaveAttribute('aria-current')
   })
 
-  it('the search affordance opens the palette', async () => {
-    const { view, openPalette } = await renderSidebar()
-    await view.getByRole('button', { name: /search anything/i }).click()
-    expect(openPalette).toHaveBeenCalled()
+  it('does not show the search affordance', async () => {
+    const { view } = await renderSidebar()
+    await expectLocatorToHaveCount(view.getByRole('button', { name: /search anything/i }), 0)
   })
 
   it('does not show the audio memo control', async () => {
