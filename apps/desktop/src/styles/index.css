@@ -278,19 +278,19 @@ html:root {
    variable on the document root so the `.reflect-editor` rules below resolve
    whatever the user picked; `EditorTextSizeEffect` mirrors the setting onto
    `[data-editor-text-size]`. Medium is the DS prose default (16px); small and
-   large step one DS size down/up. The `:root` fallback keeps medium before the
+   large step around the 17px reading default. The `:root` fallback keeps medium before the
    effect has run (and in tests that never mount it). */
 :root {
-  --editor-font-size: var(--text-base);
+  --editor-font-size: 1.0625rem;
 }
 :root[data-editor-text-size='small'] {
-  --editor-font-size: var(--text-sm);
-}
-:root[data-editor-text-size='medium'] {
   --editor-font-size: var(--text-base);
 }
+:root[data-editor-text-size='medium'] {
+  --editor-font-size: 1.0625rem;
+}
 :root[data-editor-text-size='large'] {
-  --editor-font-size: var(--text-lg);
+  --editor-font-size: 1.1875rem;
 }
 
 .reflect-editor {
@@ -309,11 +309,11 @@ html:root {
 
 /* The primary note editor (the note pane and every daily-stream row, both via
    NotePane) reads at the user's chosen text size (Settings, Editor, "Text size";
-   default 16px) instead of inheriting <body>'s 14px chrome size. Scoped to this
+   default 17px) instead of inheriting <body>'s 14px chrome size. Scoped to this
    class, never bare `.reflect-editor`, so read-only previews keep their own
    compact sizes. */
 .reflect-note-surface {
-  font-size: var(--editor-font-size, var(--text-base));
+  font-size: var(--editor-font-size, 1.0625rem);
 }
 
 :root[data-editor-full-width='true'] {
@@ -330,7 +330,7 @@ html:root {
    Un-layered, so it beats both the `padding: 0` reset above and meowdown's layered
    `--meowdown-gutter` padding. */
 .reflect-content-gutter {
-  padding-inline: var(--editor-content-gutter, max(2rem, calc((100% - 42rem) / 2)));
+  padding-inline: var(--editor-content-gutter, max(2rem, calc((100% - 44.625rem) / 2)));
 }
 
 /* Mobile note-body gutter. This mirrors `.reflect-content-gutter`'s cascade
@@ -357,8 +357,9 @@ html:root {
   inset-block: 1lh 0.5lh;
   inset-inline-start: 0.5lh;
   width: 1px;
-  background: color-mix(in oklab, var(--text-muted) 32%, transparent);
+  background: color-mix(in oklab, var(--text-muted) 52%, transparent);
   pointer-events: none;
+  z-index: 0;
 }
 
 .reflect-outline-editor
