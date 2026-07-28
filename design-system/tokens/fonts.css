@@ -1,0 +1,22 @@
+/* ============================================================
+   Reflect — Webfonts
+   Reflect's entire interface is set in Inter (the variable
+   "Inter 4.0" cut, shipped straight from the codebase).
+   One family, every weight, upright + italic.
+   ============================================================ */
+
+@font-face {
+  font-family: 'InterVariable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'InterVariable';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/InterVariable-Italic.woff2') format('woff2');
+}

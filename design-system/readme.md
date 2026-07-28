@@ -54,6 +54,7 @@ not have access, but they are recorded here for provenance and deeper study:
   - `components/button/*` — the real button variants (primary/secondary/white/text/alt).
   - `client/screens/main/*` — the app shell: `notes-sidebar`, `note-edit`, `notes-daily`.
   - `site/shared/*` — the marketing layout, nav capsule, and glassmorphic gradient button.
+  - `pages/fonts/Inter-4.0/web/*` — Inter Variable (the only typeface).
   - `public/site/icons/*`, `site/shared/logo.png` — the graph app icon & logos.
 - **Live site** — https://reflect.app (marketing copy, feature list, pricing, testimonials).
 - **Academy / docs** — https://reflect.academy
@@ -99,11 +100,12 @@ not a marketing department. Sentences are short and declarative. There's dry wit
 
 ## VISUAL FOUNDATIONS
 
-**Typeface.** Reflect uses the native system sans-serif stack everywhere: San
-Francisco on Apple platforms, Segoe UI on Windows, and the platform equivalent
-elsewhere. `--weight-medium (500)` is the workhorse for nav, buttons, and titles;
-body/editor prose is 400. Headings use **tight negative tracking** (`-0.02em`);
-default UI is subtly tightened (`-0.011em`).
+**Typeface.** **Inter Variable** keeps application chrome compact and quiet. Note
+content and reading surfaces use Apple's native San Francisco system face where
+available, falling back to Inter elsewhere. `--weight-medium (500)` is the
+workhorse for nav and buttons; body/editor prose is 400. Headings use **tight
+negative tracking** (`-0.02em`); default UI uses Inter's slight optical setting
+(`-0.011em`).
 
 **Type scale.** The app is a *writing tool*, so chrome text is deliberately **small**
 (12–14px: section headers & shortcut hints at `2xs/12px`, note titles & labels at
@@ -264,17 +266,19 @@ need pixel-exact brand icons. Set `stroke-width: 1.75` to match.
 ## Index / manifest
 
 **Root**
-- `styles.css` — global entry point (link this); `@import`s every token file.
+- `styles.css` — global entry point (link this); `@import`s every token + font file.
 - `readme.md` — this guide.
 - `SKILL.md` — Agent-Skill manifest for using this system in Claude Code.
 
 **`tokens/`** — CSS custom properties (all reachable from `styles.css`)
+- `fonts.css` — Inter Variable `@font-face`.
 - `colors.css` — indigo & cool-grey ramps, marketing purples, semantic aliases;
   `.dark` and `.reflect-space` theme scopes.
 - `typography.css` — families, type scale, weights, line-heights, tracking.
 - `spacing.css` — 4px spacing scale, radii, shadows, layout widths, motion.
 
 **`assets/`**
+- `fonts/InterVariable.woff2`, `fonts/InterVariable-Italic.woff2`
 - `reflect-app-icon.png` (rounded graph sphere), `reflect-app-icon-square.png`,
   `reflect-graph-hero.png` (graph-on-grid hero), `reflect-logo-mark.png`.
 

@@ -18,10 +18,10 @@ artifacts _or_ production code, depending on the need.
 ## Quick map
 - `readme.md` — the full design guide: product context, voice, visual foundations,
   iconography, and a file index. **Start here.**
-- `styles.css` — link this one file to inherit every token and base style.
+- `styles.css` — link this one file to inherit every token + the Inter webfont.
 - `tokens/` — colors (indigo brand + cool greys + marketing purples; `.dark` and
   `.reflect-space` theme scopes), typography, spacing/radii/shadow/motion.
-- `assets/` — the graph app icon, logo, and graph hero image.
+- `assets/` — Inter Variable fonts, the graph app icon, logo, and graph hero image.
 - `components/` — React primitives (Button, IconButton, ShortcutKey, Input,
   SearchField, Checkbox, Toggle, Card, Badge, Avatar, MenuItem). Each has a
   `.prompt.md` with usage.
@@ -34,6 +34,6 @@ Reflect is a fast, minimalist, **networked** note-taking app — a writing tool 
 prose is the hero and chrome is quiet. Two surfaces share one purple soul: the **app**
 is a calm near-white (or deep-navy dark) canvas with **indigo `#4F46E5`** as the only
 saturated accent and cool grey everything-else; the **marketing site** is a near-black
-`#030014` "deep space" lit by **purple glows** and glassmorphic borders. Use the native
-system sans-serif stack. Sentence case everywhere, no emoji, benefit-led copy. Gentle 8px radii,
+`#030014` "deep space" lit by **purple glows** and glassmorphic borders. One typeface:
+**Inter**. Sentence case everywhere, no emoji, benefit-led copy. Gentle 8px radii,
 mostly-flat surfaces with hairline borders, short calm motion (no bounce).
