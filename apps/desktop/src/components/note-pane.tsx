@@ -224,13 +224,11 @@ export function NotePaneComponent({
         registerHandle?.(dailyDate, handle)
       }
       if (handle && autoFocus) {
-        // By default the caret lands at the document start — for a seeded
-        // new note that is the empty H1, so typing names the note. An `end`
-        // selection moves it (and the scroll) to the note's content end.
+        // Set the boundary explicitly: the handle attaches before all editor
+        // extensions have necessarily settled, so focus alone can preserve a
+        // provisional selection above the first block.
         handle.focus()
-        if (autoFocusSelection === 'end') {
-          handle.setSelection('end')
-        }
+        handle.setSelection(autoFocusSelection)
         onAutoFocused?.()
       }
     },

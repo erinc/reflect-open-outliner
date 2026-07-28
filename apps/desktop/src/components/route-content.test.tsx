@@ -23,6 +23,7 @@ import { RouteContent } from './route-content'
 const editorProbe = vi.hoisted(() => ({
   onChange: null as ((markdown: string) => void) | null,
   focusCalls: [] as string[],
+  selectionCalls: [] as Array<'start' | 'end'>,
   hoverRenderer: null as boolean | null,
 }))
 
@@ -54,7 +55,7 @@ vi.mock('@/editor/note-editor', async () => {
           getMarkdown: () => markdownRef.current,
           insertMarkdown: () => {},
           focus: () => editorProbe.focusCalls.push('focus'),
-          setSelection: () => {},
+          setSelection: (position) => editorProbe.selectionCalls.push(position),
           getSelectedText: () => '',
           openSelectionMenu: () => {},
           startPendingReplacement: () => false,
@@ -137,6 +138,7 @@ beforeEach(() => {
   writes = []
   editorProbe.onChange = null
   editorProbe.focusCalls.length = 0
+  editorProbe.selectionCalls.length = 0
   editorProbe.hoverRenderer = null
   mockInvoke.mockReset()
   mockInvoke.mockImplementation(async (command, args) => {
@@ -208,6 +210,7 @@ describe('RouteContent', () => {
 
     // The navigated-to note takes focus on mount.
     await vi.waitFor(() => expect(editorProbe.focusCalls).toContain('focus'))
+    expect(editorProbe.selectionCalls).toEqual(['start'])
     await view.unmount()
   })
 
@@ -247,6 +250,7 @@ describe('RouteContent', () => {
     // to select) and the title placeholder ghosts "Untitled" over the line.
     expect(page.getByTestId('fake-editor').element().textContent).toBe('#\n')
     await vi.waitFor(() => expect(editorProbe.focusCalls).toContain('focus'))
+    expect(editorProbe.selectionCalls).toEqual(['start'])
 
     // Opening never litters the graph — even a forced flush writes nothing.
     await act(() => flushOpenDocuments())
