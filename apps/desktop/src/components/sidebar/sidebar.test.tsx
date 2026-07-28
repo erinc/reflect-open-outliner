@@ -245,22 +245,9 @@ describe('Sidebar', () => {
     expect(openPalette).toHaveBeenCalled()
   })
 
-  it('the mic button starts an audio memo', async () => {
+  it('does not show the audio memo control', async () => {
     const { view } = await renderSidebar()
-    await view.getByRole('button', { name: /record audio memo/i }).click()
-    expect(audioMemo.toggle).toHaveBeenCalled()
-  })
-
-  it('the mic button disables (without vanishing) when no provider can transcribe', async () => {
-    audioMemo.available = false
-    audioMemo.unavailableReason = 'Add an OpenAI or Gemini model in Settings to record audio memos'
-    const { view } = await renderSidebar()
-    const micButton = view.getByRole('button', { name: /record audio memo/i })
-    await expect.element(micButton).toHaveAttribute('aria-disabled', 'true')
-    // `aria-disabled` fails Playwright's enabled actionability check, but the
-    // element still receives real clicks — force past the check.
-    await micButton.click({ force: true })
-    expect(audioMemo.toggle).not.toHaveBeenCalled()
+    await expectLocatorToHaveCount(view.getByRole('button', { name: /record audio memo/i }), 0)
   })
 
   it('pinned notes render their own section', async () => {

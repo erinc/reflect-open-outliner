@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react'
 import { isUntitledNotePath, type GraphInfo } from '@reflect/core'
 import { ListChecks, MessageSquare, SquarePen } from 'lucide-react'
-import { AudioMemoButton } from '@/components/audio-memo/audio-memo-button'
 import { ListIcon } from '@/components/icons/list-icon'
 import { PencilIcon } from '@/components/icons/pencil-icon'
 import { usePinnedNotes } from '@/hooks/use-pinned-notes'
@@ -64,7 +63,6 @@ export function Sidebar({ graph, context }: SidebarProps): ReactElement {
           <div className="min-w-0 flex-1">
             <SidebarSearch onOpen={() => context.openPalette()} />
           </div>
-          <AudioMemoButton />
         </div>
 
         <nav aria-label="Primary" className="mt-6 space-y-1 px-4">
