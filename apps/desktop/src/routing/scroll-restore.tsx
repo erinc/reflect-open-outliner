@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactElement, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { useRouter } from './router'
 
@@ -25,10 +25,9 @@ export function ScrollRestored({ className, children }: ScrollRestoredProps): Re
   // Re-run whenever the history entry changes (back/forward, or note→note in
   // the same mounted container): restore the entry's offset, or reset to the
   // top for an entry that has none — never carry the previous view's position.
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (ref.current) {
       ref.current.scrollTop = savedScroll() ?? 0
-      ref.current.ownerDocument.dispatchEvent(new Event('selectionchange'))
     }
   }, [entryId, savedScroll])
 
@@ -36,10 +35,7 @@ export function ScrollRestored({ className, children }: ScrollRestoredProps): Re
     <div
       ref={ref}
       className={cn(className, 'relative')}
-      onScroll={(event) => {
-        saveScrollState(event.currentTarget.scrollTop)
-        event.currentTarget.ownerDocument.dispatchEvent(new Event('selectionchange'))
-      }}
+      onScroll={(event) => saveScrollState(event.currentTarget.scrollTop)}
     >
       {children}
     </div>

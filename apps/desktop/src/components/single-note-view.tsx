@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from 'react'
+import { isUntitledNotePath } from '@reflect/core'
 import { NotePane } from '@/components/note-pane'
 import { ScrollRestored } from '@/routing/scroll-restore'
 
@@ -36,8 +37,7 @@ export function SingleNoteView({ path, dailyDate, heading }: SingleNoteViewProps
           path={path}
           {...(dailyDate !== undefined ? { dailyDate } : {})}
           lazy
-          autoFocus
-          autoFocusSelection="end"
+          autoFocus={isUntitledNotePath(path)}
           className="flex grow flex-col"
           gutterClassName="reflect-content-gutter"
           editorClassName="grow"

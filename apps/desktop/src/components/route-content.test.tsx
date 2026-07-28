@@ -208,9 +208,9 @@ describe('RouteContent', () => {
     await expect.element(page.getByTestId('fake-editor')).toHaveTextContent('# Hello')
     expect(editorProbe.hoverRenderer).toBe(true)
 
-    // The navigated-to note takes focus on mount.
-    await vi.waitFor(() => expect(editorProbe.focusCalls).toContain('focus'))
-    expect(editorProbe.selectionCalls).toEqual(['end'])
+    // Existing notes open at the heading without an off-screen active caret.
+    expect(editorProbe.focusCalls).toEqual([])
+    expect(editorProbe.selectionCalls).toEqual([])
     await view.unmount()
   })
 
@@ -250,7 +250,7 @@ describe('RouteContent', () => {
     // placeholder ghosts "Untitled" over the line.
     expect(page.getByTestId('fake-editor').element().textContent).toBe('#\n')
     await vi.waitFor(() => expect(editorProbe.focusCalls).toContain('focus'))
-    expect(editorProbe.selectionCalls).toEqual(['end'])
+    expect(editorProbe.selectionCalls).toEqual(['start'])
 
     // Opening never litters the graph — even a forced flush writes nothing.
     await act(() => flushOpenDocuments())
