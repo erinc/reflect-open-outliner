@@ -210,7 +210,7 @@ describe('RouteContent', () => {
 
     // The navigated-to note takes focus on mount.
     await vi.waitFor(() => expect(editorProbe.focusCalls).toContain('focus'))
-    expect(editorProbe.selectionCalls).toEqual(['start'])
+    expect(editorProbe.selectionCalls).toEqual(['end'])
     await view.unmount()
   })
 
@@ -246,11 +246,11 @@ describe('RouteContent', () => {
     const view = await renderRoute({ kind: 'note', path: NEW_NOTE_PATH })
 
     await expect.element(page.getByLabelText(`Editing ${NEW_NOTE_PATH}`)).toBeVisible()
-    // The seed is an empty H1: the caret lands in it (plain focus, no text
-    // to select) and the title placeholder ghosts "Untitled" over the line.
+    // The seed is an empty H1: the document end is inside it, and the title
+    // placeholder ghosts "Untitled" over the line.
     expect(page.getByTestId('fake-editor').element().textContent).toBe('#\n')
     await vi.waitFor(() => expect(editorProbe.focusCalls).toContain('focus'))
-    expect(editorProbe.selectionCalls).toEqual(['start'])
+    expect(editorProbe.selectionCalls).toEqual(['end'])
 
     // Opening never litters the graph — even a forced flush writes nothing.
     await act(() => flushOpenDocuments())

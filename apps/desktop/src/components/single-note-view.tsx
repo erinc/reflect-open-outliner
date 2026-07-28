@@ -37,6 +37,7 @@ export function SingleNoteView({ path, dailyDate, heading }: SingleNoteViewProps
           {...(dailyDate !== undefined ? { dailyDate } : {})}
           lazy
           autoFocus
+          autoFocusSelection="end"
           className="flex grow flex-col"
           gutterClassName="reflect-content-gutter"
           editorClassName="grow"
