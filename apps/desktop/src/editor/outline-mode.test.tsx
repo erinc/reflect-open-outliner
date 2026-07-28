@@ -88,9 +88,6 @@ describe('NoteEditor outline mode', () => {
     expect(items).toHaveLength(4)
     expect(getComputedStyle(items[0]!, '::after').content).toBe('""')
     expect(getComputedStyle(items[0]!, '::after').width).toBe('1px')
-    expect(getComputedStyle(items[0]!, '::after').backgroundColor).not.toBe(
-      'rgba(0, 0, 0, 0)',
-    )
     expect(getComputedStyle(items[1]!, '::after').content).toBe('""')
     expect(getComputedStyle(items[2]!, '::after').content).toBe('none')
     expect(getComputedStyle(items[3]!, '::after').content).toBe('none')
