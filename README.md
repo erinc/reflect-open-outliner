@@ -7,6 +7,8 @@ and optional AI over your own Markdown.
 [![CI](https://github.com/team-reflect/reflect-open/actions/workflows/ci.yml/badge.svg)](https://github.com/team-reflect/reflect-open/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+See the fork's [Outliner change timeline](docs/outliner-change-timeline.md).
+
 Reflect is an open-source note-taking app built around a folder of Markdown
 files. It opens to today's note, lets `[[wiki links]]` connect people,
 projects, and ideas, and keeps search and backlinks fast without turning your
