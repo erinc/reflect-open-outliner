@@ -205,7 +205,7 @@ export function DailyStream({ target }: DailyStreamProps): ReactElement {
   return (
     <div
       data-testid="daily-stream"
-      className="h-full overflow-auto"
+      className="scrollbar-none h-full overflow-auto"
       onScroll={(event) => saveScrollState(event.currentTarget.scrollTop)}
       // An explicit click/touch picks its own focus target — a focus still
       // pending for a day whose editor hasn't mounted yet must not steal the

@@ -104,6 +104,7 @@ describe('DailyStream', () => {
     )
 
     const stream = page.getByTestId('daily-stream')
+    expect(stream.element().classList.contains('scrollbar-none')).toBe(true)
     await vi.waitFor(() => expect(stream.element().scrollTop).toBeGreaterThan(0))
     await expect.element(page.getByText(formatDayLabel(today, 'mdy'))).toBeVisible()
     await view.unmount()
