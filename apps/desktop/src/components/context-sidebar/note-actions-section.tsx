@@ -6,7 +6,6 @@ import { usePinnedNotes } from '@/hooks/use-pinned-notes'
 import { toggleNotePinned } from '@/lib/note-pin'
 import { toggleNotePrivate } from '@/lib/note-private'
 import { useOptimisticPinToggle } from '@/lib/notes/use-optimistic-pin-toggle'
-import { NoteGistAction } from './note-gist-action'
 import { NoteTrashAction } from './note-trash-action'
 import { NoteToggleAction } from './note-toggle-action'
 import { SidebarSection } from './sidebar-section'
@@ -59,7 +58,6 @@ export function NoteActionsSection({
         failureLabel="Updating privacy"
         tooltip="Locks this note out of AI. Backup and sync still include it."
       />
-      <NoteGistAction path={path} />
       {showTrash ? <NoteTrashAction path={path} /> : null}
     </SidebarSection>
   )

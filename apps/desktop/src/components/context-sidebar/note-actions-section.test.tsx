@@ -191,6 +191,14 @@ describe('NoteActionsSection deep-link action', () => {
   })
 })
 
+describe('NoteActionsSection sharing action', () => {
+  it('does not offer private-link sharing in the right sidebar', async () => {
+    const view = await renderSection('notes/a.md')
+    expect(view.getByRole('button', { name: /Share with private link/ }).query()).toBeNull()
+    await view.unmount()
+  })
+})
+
 describe('NoteActionsSection trash action', () => {
   it('does not offer trash unless the note sidebar opts in', async () => {
     const view = await renderSection('notes/a.md')
