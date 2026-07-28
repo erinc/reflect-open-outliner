@@ -100,12 +100,10 @@ not a marketing department. Sentences are short and declarative. There's dry wit
 
 ## VISUAL FOUNDATIONS
 
-**Typeface.** **Inter Variable** keeps application chrome compact and quiet.
-**Atkinson Hyperlegible** is reserved for note content and reading surfaces so
-the user's writing has a distinct, highly legible voice. `--weight-medium (500)` is
-the workhorse for nav and buttons; body/editor prose is 400. Headings use **tight
-negative tracking** (`-0.02em`); default UI uses Inter's slight optical setting
-(`-0.011em`).
+**Typeface.** One family: **Inter** (the variable "Inter 4.0" cut). Nothing else.
+`--weight-medium (500)` is the workhorse for nav, buttons, titles and note titles;
+body/editor prose is 400. Headings use **tight negative tracking** (`-0.02em`);
+default UI uses Inter's slight optical setting (`-0.011em`).
 
 **Type scale.** The app is a *writing tool*, so chrome text is deliberately **small**
 (12–14px: section headers & shortcut hints at `2xs/12px`, note titles & labels at
@@ -271,7 +269,7 @@ need pixel-exact brand icons. Set `stroke-width: 1.75` to match.
 - `SKILL.md` — Agent-Skill manifest for using this system in Claude Code.
 
 **`tokens/`** — CSS custom properties (all reachable from `styles.css`)
-- `fonts.css` — Inter Variable and Atkinson Hyperlegible `@font-face` rules.
+- `fonts.css` — Inter Variable `@font-face`.
 - `colors.css` — indigo & cool-grey ramps, marketing purples, semantic aliases;
   `.dark` and `.reflect-space` theme scopes.
 - `typography.css` — families, type scale, weights, line-heights, tracking.

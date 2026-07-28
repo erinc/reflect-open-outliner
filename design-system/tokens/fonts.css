@@ -1,7 +1,8 @@
 /* ============================================================
    Reflect — Webfonts
-   App chrome uses Inter Variable. Reading surfaces use Atkinson
-   Hyperlegible, with regular and bold upright + italic faces.
+   Reflect's entire interface is set in Inter (the variable
+   "Inter 4.0" cut, shipped straight from the codebase).
+   One family, every weight, upright + italic.
    ============================================================ */
 
 @font-face {
@@ -18,36 +19,4 @@
   font-weight: 100 900;
   font-display: swap;
   src: url('../assets/fonts/InterVariable-Italic.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Atkinson Hyperlegible';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../assets/fonts/AtkinsonHyperlegible-Regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Atkinson Hyperlegible';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../assets/fonts/AtkinsonHyperlegible-Italic.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Atkinson Hyperlegible';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../assets/fonts/AtkinsonHyperlegible-Bold.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Atkinson Hyperlegible';
-  font-style: italic;
-  font-weight: 700;
-  font-display: swap;
-  src: url('../assets/fonts/AtkinsonHyperlegible-BoldItalic.ttf') format('truetype');
 }

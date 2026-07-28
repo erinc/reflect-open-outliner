@@ -1,10 +1,9 @@
 /* ============================================================
    Reflect — Typography tokens
    ------------------------------------------------------------
-   Inter Variable keeps app chrome tight and functional. Atkinson
-   Hyperlegible gives reading surfaces a distinct, accessible voice
-   — Reflect is a writing tool, so chrome text is small
-   (12–14px) and the user's prose is the hero.
+   One typeface: Inter (variable). The product leans on a tight,
+   functional type scale — Reflect is a writing tool, so chrome
+   text is small (12–14px) and the user's prose is the hero.
    The marketing site is the opposite: oversized, tight display
    headings on the dark canvas.
    ============================================================ */
@@ -15,9 +14,8 @@
                'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco,
                Consolas, monospace;
-  /* Note editor and reading surfaces; app chrome remains on --font-sans */
-  --font-reading: 'Atkinson Hyperlegible', 'InterVariable', ui-sans-serif,
-                  system-ui, sans-serif;
+  /* The note editor / reading surface can swap to a serif */
+  --font-reading: 'InterVariable', Georgia, 'Times New Roman', serif;
   /* Keyboard-shortcut glyphs (⌘ ⌥ ⇧) — system-ui renders them cleanly */
   --font-shortcut: system-ui, ui-monospace, SFMono-Regular, Menlo, monospace;
 
