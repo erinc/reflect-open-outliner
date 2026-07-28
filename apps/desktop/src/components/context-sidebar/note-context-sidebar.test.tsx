@@ -18,7 +18,7 @@ vi.mock('@/providers/graph-provider', () => ({
 }))
 vi.mock('@/providers/settings-provider', () => ({
   useSettings: () => ({
-    settings: { semanticSearchEnabled: true },
+    settings: { semanticSearchEnabled: true, dateFormat: 'mdy', weekStartDay: 'monday' },
     updateSettings: () => {},
   }),
 }))
@@ -48,6 +48,15 @@ beforeEach(() => {
 })
 
 describe('NoteContextSidebar', () => {
+  it('shows the calendar with today selected', async () => {
+    const view = await renderSidebar('notes/rust.md')
+
+    await expect.element(view.getByRole('button', { name: 'Jump to today' })).toBeInTheDocument()
+    const selectedDay = view.getByRole('button', { pressed: true })
+    await expect.element(selectedDay).toHaveAttribute('aria-current', 'date')
+    await view.unmount()
+  })
+
   it('queries the note path for similar notes and shows no section without results', async () => {
     const view = await renderSidebar('notes/rust.md')
     await vi.waitFor(() => expect(relatedNotes).toHaveBeenCalledWith('notes/rust.md', 6))
