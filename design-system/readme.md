@@ -100,12 +100,10 @@ not a marketing department. Sentences are short and declarative. There's dry wit
 
 ## VISUAL FOUNDATIONS
 
-**Typeface.** **Inter Variable** keeps application chrome compact and quiet. Note
-content and reading surfaces use Apple's native San Francisco system face where
-available, falling back to Inter elsewhere. `--weight-medium (500)` is the
-workhorse for nav and buttons; body/editor prose is 400. Headings use **tight
-negative tracking** (`-0.02em`); default UI uses Inter's slight optical setting
-(`-0.011em`).
+**Typeface.** One family: **Inter** (the variable "Inter 4.0" cut). Nothing else.
+`--weight-medium (500)` is the workhorse for nav, buttons, titles and note titles;
+body/editor prose is 400. Headings use **tight negative tracking** (`-0.02em`);
+default UI uses Inter's slight optical setting (`-0.011em`).
 
 **Type scale.** The app is a *writing tool*, so chrome text is deliberately **small**
 (12–14px: section headers & shortcut hints at `2xs/12px`, note titles & labels at
