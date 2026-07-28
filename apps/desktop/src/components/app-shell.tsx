@@ -61,7 +61,7 @@ export function AppShell({
         <aside
           id="context-sidebar"
           aria-label="Context"
-          className="relative hidden w-[var(--context-sidebar-width)] shrink-0 border-l border-border bg-surface-sunken lg:block"
+          className="relative w-[var(--context-sidebar-width)] shrink-0 border-l border-border bg-surface-sunken"
         >
           {contextEdge}
           <div className="h-full overflow-auto">{context}</div>

@@ -24,7 +24,7 @@ export interface CommandContext {
   /** Discard the current view's saved scroll offsets so it re-anchors when revisited. */
   clearScrollState: () => void
   toggleTheme: () => void
-  /** Collapse/expand the workspace and contextual sidebars. */
+  /** Collapse/expand the contextual sidebar. */
   toggleSidebar: () => void
   /** Start a fresh chat conversation. */
   newChat: () => void

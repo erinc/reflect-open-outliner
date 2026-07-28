@@ -1,7 +1,6 @@
 import { render } from 'vitest-browser-react'
 import { page } from 'vitest/browser'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { GraphInfo } from '@reflect/core'
 import type { ContextSidebarTarget } from '@/components/context-sidebar/sidebar-route'
 
 interface WorkspaceState {
@@ -31,9 +30,6 @@ vi.mock('@/components/embeddings-sync', () => ({ EmbeddingsSync: () => null }))
 vi.mock('@/components/note-find-bar', () => ({ NoteFindBar: () => null }))
 vi.mock('@/components/route-content', () => ({ RouteContent: () => <div>Route content</div> }))
 vi.mock('@/components/shortcuts-dialog', () => ({ ShortcutsDialog: () => null }))
-vi.mock('@/components/sidebar/sidebar', () => ({
-  Sidebar: () => <div data-testid="workspace-sidebar" />,
-}))
 vi.mock('@/components/templates/template-create-dialog', () => ({
   TemplateCreateDialog: () => null,
 }))
@@ -44,7 +40,7 @@ vi.mock('@/providers/focused-daily-provider', () => ({
 vi.mock('@/providers/sidebar-provider', () => ({
   useSidebar: () => ({ collapsed: workspaceState.collapsed, toggleSidebar: vi.fn() }),
 }))
-// The AppShell asides mount resize handles, which read the persisted widths.
+// The AppShell context aside mounts a resize handle, which reads the persisted width.
 vi.mock('@/providers/settings-provider', () => ({
   useSettings: () => ({
     settings: { sidebarWidth: 260, contextSidebarWidth: 320 },
@@ -56,13 +52,9 @@ vi.mock('@/routing/app-shortcuts', () => ({ useAppShortcuts: () => ({}) }))
 
 const { WorkspaceContent } = await import('./workspace-content')
 
-const GRAPH: GraphInfo = { root: '/notes', name: 'Notes', generation: 1 }
-
 beforeEach(async () => {
   workspaceState.collapsed = false
   workspaceState.target = { kind: 'daily', date: '2026-07-11' }
-  // The context sidebar is `hidden lg:block`, so it only renders on a
-  // desktop-width viewport.
   await page.viewport(1280, 800)
 })
 
@@ -71,35 +63,37 @@ afterEach(async () => {
 })
 
 describe('WorkspaceContent', () => {
-  it('hides and restores the workspace and daily context sidebars together', async () => {
-    const view = await render(<WorkspaceContent graph={GRAPH} />)
+  it('keeps the workspace sidebar hidden and toggles the daily context sidebar', async () => {
+    const view = await render(<WorkspaceContent />)
 
-    await expect
-      .element(view.getByRole('complementary', { name: 'Workspace' }))
-      .toBeInTheDocument()
+    expect(view.getByRole('complementary', { name: 'Workspace' }).query()).toBeNull()
     await expect.element(view.getByRole('complementary', { name: 'Context' })).toBeInTheDocument()
     expect(view.getByTestId('daily-context').element().textContent).toBe('2026-07-11')
 
     workspaceState.collapsed = true
-    await view.rerender(<WorkspaceContent graph={GRAPH} />)
-    expect(view.getByRole('complementary', { name: 'Workspace' }).query()).toBeNull()
+    await view.rerender(<WorkspaceContent />)
     expect(view.getByRole('complementary', { name: 'Context' }).query()).toBeNull()
 
     workspaceState.collapsed = false
-    await view.rerender(<WorkspaceContent graph={GRAPH} />)
-    await expect
-      .element(view.getByRole('complementary', { name: 'Workspace' }))
-      .toBeInTheDocument()
+    await view.rerender(<WorkspaceContent />)
+    expect(view.getByRole('complementary', { name: 'Workspace' }).query()).toBeNull()
     await expect.element(view.getByRole('complementary', { name: 'Context' })).toBeInTheDocument()
+  })
+
+  it('keeps the context sidebar visible in a narrow window', async () => {
+    await page.viewport(700, 800)
+    const view = await render(<WorkspaceContent />)
+
+    await expect.element(view.getByRole('complementary', { name: 'Context' })).toBeVisible()
   })
 
   it('applies the same collapsed state to ordinary note context', async () => {
     workspaceState.target = { kind: 'note', path: 'notes/project.md' }
-    const view = await render(<WorkspaceContent graph={GRAPH} />)
+    const view = await render(<WorkspaceContent />)
     expect(view.getByTestId('note-context').element().textContent).toBe('notes/project.md')
 
     workspaceState.collapsed = true
-    await view.rerender(<WorkspaceContent graph={GRAPH} />)
+    await view.rerender(<WorkspaceContent />)
     expect(view.getByRole('complementary', { name: 'Context' }).query()).toBeNull()
   })
 })

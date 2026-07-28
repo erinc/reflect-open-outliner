@@ -1,5 +1,4 @@
 import type { ReactElement } from 'react'
-import type { GraphInfo } from '@reflect/core'
 import { AppShell } from '@/components/app-shell'
 import { CommandPalette } from '@/components/command-palette/command-palette'
 import { DailyContextSidebar } from '@/components/context-sidebar/daily-context-sidebar'
@@ -9,17 +8,12 @@ import { EmbeddingsSync } from '@/components/embeddings-sync'
 import { NoteFindBar } from '@/components/note-find-bar'
 import { RouteContent } from '@/components/route-content'
 import { ShortcutsDialog } from '@/components/shortcuts-dialog'
-import { Sidebar } from '@/components/sidebar/sidebar'
 import { SidebarResizeHandle } from '@/components/sidebar-resize-handle'
 import { TemplateCreateDialog } from '@/components/templates/template-create-dialog'
 import { TemplatePicker } from '@/components/templates/template-picker'
 import { useDailyContextTarget } from '@/providers/focused-daily-provider'
 import { useSidebar } from '@/providers/sidebar-provider'
 import { useAppShortcuts } from '@/routing/app-shortcuts'
-
-interface WorkspaceContentProps {
-  graph: GraphInfo
-}
 
 /** The context panel for the route's sidebar target, if it gets one. */
 function contextSidebarFor(target: ContextSidebarTarget | null): ReactElement | undefined {
@@ -35,13 +29,13 @@ function contextSidebarFor(target: ContextSidebarTarget | null): ReactElement | 
 
 /**
  * Everything inside the workspace's providers: the headerless shell — the
- * collapsible workspace and contextual sidebars beside the note pane — plus
+ * note pane and collapsible context sidebar — plus
  * the always-mounted global surfaces (operations status, ⌘K palette,
  * embeddings sync). Split
  * from {@link GraphWorkspace} because these hooks need the providers it
  * mounts.
  */
-export function WorkspaceContent({ graph }: WorkspaceContentProps): ReactElement {
+export function WorkspaceContent(): ReactElement {
   const { collapsed } = useSidebar()
   const commandContext = useAppShortcuts()
   // Daily routes get the day's contextual panel and note routes the note's;
@@ -52,8 +46,6 @@ export function WorkspaceContent({ graph }: WorkspaceContentProps): ReactElement
 
   return (
     <AppShell
-      sidebar={collapsed ? undefined : <Sidebar graph={graph} context={commandContext} />}
-      sidebarEdge={<SidebarResizeHandle panel="workspace" />}
       context={collapsed ? undefined : contextSidebarFor(contextTarget)}
       contextEdge={<SidebarResizeHandle panel="context" />}
     >

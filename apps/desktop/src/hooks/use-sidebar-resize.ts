@@ -28,9 +28,6 @@ const DRAG_ACTIVATE_PX = 3
 /** The center note pane never gives up more than this to the rails. */
 export const EDITOR_MIN_WIDTH_PX = 360
 
-/** Tailwind's `lg` breakpoint — the context aside is CSS-hidden below it. */
-const CONTEXT_BREAKPOINT_PX = 1024
-
 /** Which resizable AppShell panel a handle controls. */
 export type ResizableSidebarPanel = 'workspace' | 'context'
 
@@ -78,10 +75,10 @@ export interface EffectiveSidebarWidths {
  * The single source of truth for rendered rail widths. Preferences persist
  * at full size in settings; this derives what the current viewport can
  * honor, reserving {@link EDITOR_MIN_WIDTH_PX} for the note pane and scaling
- * both rails down proportionally when they cannot both fit. A rail never
+ * the visible context rail down when it cannot fit. The hidden workspace
+ * rail's preference is preserved for when that UI returns. A rail never
  * shrinks below its range minimum — on a truly tiny window the editor gives
- * way instead, because unusable rails help no one. The context rail only
- * counts against the budget at viewports where CSS actually shows it.
+ * way instead, because unusable rails help no one.
  */
 export function effectiveSidebarWidths(
   viewportWidth: number,
@@ -90,18 +87,13 @@ export function effectiveSidebarWidths(
 ): EffectiveSidebarWidths {
   const workspace = clampSidebarWidth(SIDEBAR_WIDTH_RANGE, preferredWorkspace)
   const context = clampSidebarWidth(CONTEXT_SIDEBAR_WIDTH_RANGE, preferredContext)
-  const contextVisible = viewportWidth >= CONTEXT_BREAKPOINT_PX
   const budget = Math.max(0, viewportWidth - EDITOR_MIN_WIDTH_PX)
-  const total = workspace + (contextVisible ? context : 0)
-  if (total <= budget) {
+  if (context <= budget) {
     return { workspace, context }
   }
-  const scale = budget / total
   return {
-    workspace: Math.max(SIDEBAR_WIDTH_RANGE.min, Math.floor(workspace * scale)),
-    context: contextVisible
-      ? Math.max(CONTEXT_SIDEBAR_WIDTH_RANGE.min, Math.floor(context * scale))
-      : context,
+    workspace,
+    context: Math.max(CONTEXT_SIDEBAR_WIDTH_RANGE.min, budget),
   }
 }
 

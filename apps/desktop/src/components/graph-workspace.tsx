@@ -63,7 +63,7 @@ export function GraphWorkspace({ graph }: GraphWorkspaceProps): ReactElement {
                                   import's single face. */}
                               {isMainWindow() ? (
                                 <V1ImportProvider graph={graph}>
-                                  <WorkspaceContent graph={graph} />
+                                  <WorkspaceContent />
                                 </V1ImportProvider>
                               ) : (
                                 <NoteWindowContent />
