@@ -4,7 +4,9 @@ import type { ProseMirrorNode } from '@prosekit/pm/model'
 import { EditorState, TextSelection } from '@prosekit/pm/state'
 import {
   canStrictIndent,
+  dedentNestedOutlineItemBackward,
   isSelectionInListKind,
+  joinOutlineBlockBackward,
   joinOutlineItemBackward,
   normalizeOutlineTransaction,
 } from './outline-mode'
@@ -159,5 +161,68 @@ describe('joinOutlineItemBackward', () => {
     expect(nextState).not.toBeNull()
     expect(docToMarkdown(nextState!.doc)).toBe('- firstsecond\n')
     expect(nextState!.selection.from).toBe(textPosition(nextState!.doc, 'first') + 4)
+  })
+})
+
+describe('joinOutlineBlockBackward', () => {
+  it('joins a continuation without moving the surrounding item', () => {
+    const doc = markdownToDoc('- previous\n- parent\n\n  continuation')
+    const state = EditorState.create({
+      doc,
+      selection: TextSelection.create(
+        doc,
+        textPosition(doc, 'continuation') - 1,
+      ),
+    })
+    let nextState: EditorState | null = null
+
+    const handled = joinOutlineBlockBackward(state, (transaction) => {
+      nextState = state.apply(transaction)
+    })
+
+    expect(handled).toBe(true)
+    expect(nextState).not.toBeNull()
+    expect(docToMarkdown(nextState!.doc)).toBe(
+      '- previous\n- parentcontinuation\n',
+    )
+  })
+})
+
+describe('dedentNestedOutlineItemBackward', () => {
+  it('outdents a nested item without unwrapping its bullet', () => {
+    const doc = markdownToDoc('- parent\n  - child\n- sibling')
+    const state = EditorState.create({
+      doc,
+      selection: TextSelection.create(doc, textPosition(doc, 'child') - 1),
+    })
+    let nextState: EditorState | null = null
+
+    const handled = dedentNestedOutlineItemBackward(state, (transaction) => {
+      nextState = state.apply(transaction)
+    })
+
+    expect(handled).toBe(true)
+    expect(nextState).not.toBeNull()
+    expect(docToMarkdown(nextState!.doc)).toBe('- parent\n- child\n- sibling\n')
+  })
+
+  it('moves the nested item with its descendants', () => {
+    const doc = markdownToDoc(
+      '- parent\n  - child\n    - grandchild\n- sibling',
+    )
+    const state = EditorState.create({
+      doc,
+      selection: TextSelection.create(doc, textPosition(doc, 'child') - 1),
+    })
+    let nextState: EditorState | null = null
+
+    dedentNestedOutlineItemBackward(state, (transaction) => {
+      nextState = state.apply(transaction)
+    })
+
+    expect(nextState).not.toBeNull()
+    expect(docToMarkdown(nextState!.doc)).toBe(
+      '- parent\n- child\n  - grandchild\n- sibling\n',
+    )
   })
 })

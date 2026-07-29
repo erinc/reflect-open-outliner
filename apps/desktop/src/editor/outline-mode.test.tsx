@@ -281,6 +281,28 @@ describe('NoteEditor outline mode', () => {
     })
   })
 
+  it('outdents a nested item at its start without adding blank lines', async () => {
+    const handle = await renderOutline('- parent\n  - child')
+
+    await userEvent.keyboard('{Meta>}{ArrowLeft}{/Meta}')
+    await userEvent.keyboard('{Backspace}')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- parent\n- child\n')
+    })
+  })
+
+  it('joins a continuation without moving its parent item', async () => {
+    const handle = await renderOutline('- previous\n- parent\n\n  continuation')
+
+    await userEvent.keyboard('{Meta>}{ArrowLeft}{/Meta}')
+    await userEvent.keyboard('{Backspace}')
+
+    await vi.waitFor(() => {
+      expect(handle.getMarkdown()).toBe('- previous\n- parentcontinuation\n')
+    })
+  })
+
   it('deletes a cleared first child and moves the caret to its parent end', async () => {
     const handle = await renderOutline('- parent\n  - child')
 

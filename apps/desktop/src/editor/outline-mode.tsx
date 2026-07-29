@@ -1,6 +1,6 @@
 import { useMemo, type ReactElement } from 'react'
 import { definePlugin } from '@prosekit/core'
-import type { ProseMirrorNode } from '@prosekit/pm/model'
+import { Fragment, type ProseMirrorNode } from '@prosekit/pm/model'
 import {
   Plugin,
   Selection,
@@ -165,6 +165,7 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
     context === null ||
     currentBlock === null ||
     currentBlock === undefined ||
+    $from.parent !== currentBlock ||
     !atBlockStart ||
     !$from.parent.isTextblock
   ) {
@@ -208,6 +209,140 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
     dispatch(
       transaction
         .setSelection(TextSelection.create(transaction.doc, joinPosition))
+        .scrollIntoView(),
+    )
+  }
+  return true
+}
+
+/** Merge a continuation block without moving its surrounding outline item. */
+export const joinOutlineBlockBackward: Command = (state, dispatch, view) => {
+  const context = nearestListContext(state)
+  const { $from } = state.selection
+  const atBlockStart =
+    view?.endOfTextblock('backward', state) ??
+    $from.parentOffset === 0
+  if (
+    !state.selection.empty ||
+    context === null ||
+    context.node.firstChild === $from.parent ||
+    !atBlockStart ||
+    !$from.parent.isTextblock
+  ) {
+    return false
+  }
+
+  const index = $from.index(context.depth)
+  const previousBlock = index > 0 ? context.node.child(index - 1) : null
+  if (previousBlock === null || !previousBlock.isTextblock) {
+    return false
+  }
+
+  if (dispatch !== undefined) {
+    const children: ProseMirrorNode[] = []
+    let precedingSize = 0
+    for (let childIndex = 0; childIndex < index - 1; childIndex += 1) {
+      const child = context.node.child(childIndex)
+      children.push(child)
+      precedingSize += child.nodeSize
+    }
+    children.push(
+      previousBlock.copy(previousBlock.content.append($from.parent.content)),
+    )
+    for (
+      let childIndex = index + 1;
+      childIndex < context.node.childCount;
+      childIndex += 1
+    ) {
+      children.push(context.node.child(childIndex))
+    }
+
+    const itemFrom = $from.before(context.depth)
+    const transaction = state.tr.replaceWith(
+      itemFrom,
+      $from.after(context.depth),
+      context.node.type.createChecked(
+        context.node.attrs,
+        Fragment.fromArray(children),
+      ),
+    )
+    dispatch(
+      transaction
+        .setSelection(
+          TextSelection.create(
+            transaction.doc,
+            itemFrom + 2 + precedingSize + previousBlock.content.size,
+          ),
+        )
+        .scrollIntoView(),
+    )
+  }
+  return true
+}
+
+/** Outdent a nested outline item without unwrapping its bullet. */
+export const dedentNestedOutlineItemBackward: Command = (state, dispatch, view) => {
+  const context = nearestListContext(state)
+  const { $from } = state.selection
+  const atBlockStart =
+    view?.endOfTextblock('backward', state) ??
+    $from.parentOffset === 0
+  if (
+    !state.selection.empty ||
+    context === null ||
+    isSelectionInRootItem(state) ||
+    !atBlockStart ||
+    !$from.parent.isTextblock
+  ) {
+    return false
+  }
+
+  const parentDepth = context.depth - 1
+  const parentItem = $from.node(parentDepth)
+  const index = $from.index(parentDepth)
+  if (parentItem.type.name !== 'list' || index === 0) {
+    return false
+  }
+
+  if (dispatch !== undefined) {
+    const parentChildren: ProseMirrorNode[] = []
+    for (let childIndex = 0; childIndex < index; childIndex += 1) {
+      parentChildren.push(parentItem.child(childIndex))
+    }
+    const outdentedChildren: ProseMirrorNode[] = []
+    context.node.forEach((child) => outdentedChildren.push(child))
+    for (
+      let childIndex = index + 1;
+      childIndex < parentItem.childCount;
+      childIndex += 1
+    ) {
+      outdentedChildren.push(parentItem.child(childIndex))
+    }
+
+    const parent = parentItem.type.createChecked(
+      parentItem.attrs,
+      Fragment.fromArray(parentChildren),
+    )
+    const outdented = context.node.type.createChecked(
+      context.node.attrs,
+      Fragment.fromArray(outdentedChildren),
+    )
+    const parentFrom = $from.before(parentDepth)
+    const currentFrom = $from.before(context.depth)
+    const selectionOffset = state.selection.from - currentFrom
+    const transaction = state.tr.replaceWith(
+      parentFrom,
+      $from.after(parentDepth),
+      Fragment.fromArray([parent, outdented]),
+    )
+    dispatch(
+      transaction
+        .setSelection(
+          TextSelection.create(
+            transaction.doc,
+            parentFrom + parent.nodeSize + selectionOffset,
+          ),
+        )
         .scrollIntoView(),
     )
   }
@@ -305,6 +440,8 @@ export function OutlineMode({ allowTitle }: OutlineModeProps): ReactElement {
         view?: Parameters<Command>[2],
       ) =>
         deleteEmptyOutlineItem(state, dispatch) ||
+        joinOutlineBlockBackward(state, dispatch, view) ||
+        dedentNestedOutlineItemBackward(state, dispatch, view) ||
         joinOutlineItemBackward(state, dispatch, view),
       Enter: insertEmptyRootSibling,
       Tab: protectInvalidIndent,
