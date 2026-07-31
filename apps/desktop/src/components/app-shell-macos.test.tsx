@@ -14,7 +14,9 @@ describe('AppShell on macOS', () => {
   })
 
   it('keeps context scrolling while hiding its scrollbar', async () => {
-    const view = await render(<AppShell context={<div>Context content</div>}>Note content</AppShell>)
+    const view = await render(
+      <AppShell context={<div>Context content</div>}>Note content</AppShell>,
+    )
 
     const context = view.getByRole('complementary', { name: 'Context' }).element()
     const scroller = context.querySelector('.overflow-auto')

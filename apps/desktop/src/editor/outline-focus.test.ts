@@ -5,11 +5,7 @@ import { outlineFocusEntries } from './outline-focus'
 function positionOf(doc: ReturnType<typeof markdownToDoc>, text: string): number {
   let position: number | null = null
   doc.descendants((node, nodePosition) => {
-    if (
-      position === null &&
-      node.type.name === 'list' &&
-      node.firstChild?.textContent === text
-    ) {
+    if (position === null && node.type.name === 'list' && node.firstChild?.textContent === text) {
       position = nodePosition
     }
   })
@@ -34,9 +30,7 @@ describe('outlineFocusEntries', () => {
   it('addresses a root item at document position zero', () => {
     const doc = markdownToDoc('- parent\n  - child\n- sibling')
 
-    expect(outlineFocusEntries(doc, 0)).toEqual([
-      { label: 'parent', position: 0 },
-    ])
+    expect(outlineFocusEntries(doc, 0)).toEqual([{ label: 'parent', position: 0 }])
   })
 
   it('uses a readable fallback for empty items', () => {

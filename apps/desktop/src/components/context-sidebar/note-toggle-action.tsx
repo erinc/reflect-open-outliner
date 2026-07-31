@@ -119,7 +119,7 @@ export function NoteToggleAction({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipTrigger render={button} />
       <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>
   )

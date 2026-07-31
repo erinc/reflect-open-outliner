@@ -39,9 +39,7 @@ function displayLabel(node: ProseMirrorNode): string {
   if (content === null) {
     return 'Untitled block'
   }
-  const text = (
-    content.isTextblock ? getTextblockDisplayText(content) : content.textContent
-  ).trim()
+  const text = (content.isTextblock ? getTextblockDisplayText(content) : content.textContent).trim()
   if (text === '') {
     return 'Untitled block'
   }
@@ -97,11 +95,7 @@ function nearestListPosition(state: EditorState, position = state.selection.from
   return null
 }
 
-function selectionInsideList(
-  state: EditorState,
-  position: number,
-  node: ProseMirrorNode,
-): boolean {
+function selectionInsideList(state: EditorState, position: number, node: ProseMirrorNode): boolean {
   return state.selection.from > position && state.selection.to < position + node.nodeSize
 }
 
@@ -118,10 +112,7 @@ function selectionAtListEdge(
   return Selection.findFrom(doc.resolve(boundary), direction, true)
 }
 
-function focusTransaction(
-  state: EditorState,
-  position: number | null,
-): Transaction {
+function focusTransaction(state: EditorState, position: number | null): Transaction {
   const transaction = state.tr.setMeta(outlineFocusKey, { position } satisfies OutlineFocusMeta)
   if (position === null) {
     return transaction
@@ -244,12 +235,7 @@ function focusPositionFromMarker(view: EditorView, event: Event): number | null 
 }
 
 function handleMarkerPointerDown(view: EditorView, event: MouseEvent): boolean {
-  if (
-    event.button !== 0 ||
-    (!event.metaKey && !event.ctrlKey) ||
-    event.shiftKey ||
-    event.altKey
-  ) {
+  if (event.button !== 0 || (!event.metaKey && !event.ctrlKey) || event.shiftKey || event.altKey) {
     return false
   }
   const position = focusPositionFromMarker(view, event)
@@ -272,8 +258,7 @@ function handleBreadcrumbClick(view: EditorView, event: MouseEvent): boolean {
   }
 
   const rawPosition = button.dataset['outlineFocusPosition']
-  const position =
-    rawPosition === undefined ? null : Number.parseInt(rawPosition, 10)
+  const position = rawPosition === undefined ? null : Number.parseInt(rawPosition, 10)
   if (position !== null && !Number.isSafeInteger(position)) {
     return false
   }
@@ -303,9 +288,7 @@ function createOutlineFocusPlugin(): Plugin<OutlineFocusState> {
         const mapped = transaction.mapping.mapResult(value.position, 1)
         return {
           position:
-            !mapped.deleted && listNodeAt(newState.doc, mapped.pos) !== null
-              ? mapped.pos
-              : null,
+            !mapped.deleted && listNodeAt(newState.doc, mapped.pos) !== null ? mapped.pos : null,
         }
       },
     },
@@ -427,11 +410,7 @@ const focusSelectedItem: Command = (state, dispatch) => {
 
 const insertFocusedChild: Command = (state, dispatch) => {
   const focus = outlineFocusKey.getState(state)
-  if (
-    focus?.position === null ||
-    focus === undefined ||
-    !state.selection.empty
-  ) {
+  if (focus?.position === null || focus === undefined || !state.selection.empty) {
     return false
   }
   const focusedNode = listNodeAt(state.doc, focus.position)
@@ -461,10 +440,7 @@ const insertFocusedChild: Command = (state, dispatch) => {
     )
     const insertAt = focus.position + 1 + contentBlock.nodeSize
     const transaction = state.tr.insert(insertAt, child)
-    const selection = Selection.near(
-      transaction.doc.resolve(insertAt + 2),
-      1,
-    )
+    const selection = Selection.near(transaction.doc.resolve(insertAt + 2), 1)
     dispatch(transaction.setSelection(selection).scrollIntoView())
   }
   return true

@@ -138,9 +138,7 @@ describe('canStrictIndent', () => {
   })
 
   it('allows a deeper indent when a real sibling precedes the item', () => {
-    expect(
-      canStrictIndent(stateAt('- parent\n  - first\n  - second', 'second')),
-    ).toBe(true)
+    expect(canStrictIndent(stateAt('- parent\n  - first\n  - second', 'second'))).toBe(true)
   })
 })
 
@@ -169,10 +167,7 @@ describe('joinOutlineBlockBackward', () => {
     const doc = markdownToDoc('- previous\n- parent\n\n  continuation')
     const state = EditorState.create({
       doc,
-      selection: TextSelection.create(
-        doc,
-        textPosition(doc, 'continuation') - 1,
-      ),
+      selection: TextSelection.create(doc, textPosition(doc, 'continuation') - 1),
     })
     let nextState: EditorState | null = null
 
@@ -182,9 +177,7 @@ describe('joinOutlineBlockBackward', () => {
 
     expect(handled).toBe(true)
     expect(nextState).not.toBeNull()
-    expect(docToMarkdown(nextState!.doc)).toBe(
-      '- previous\n- parentcontinuation\n',
-    )
+    expect(docToMarkdown(nextState!.doc)).toBe('- previous\n- parentcontinuation\n')
   })
 })
 
@@ -207,9 +200,7 @@ describe('dedentNestedOutlineItemBackward', () => {
   })
 
   it('moves the nested item with its descendants', () => {
-    const doc = markdownToDoc(
-      '- parent\n  - child\n    - grandchild\n- sibling',
-    )
+    const doc = markdownToDoc('- parent\n  - child\n    - grandchild\n- sibling')
     const state = EditorState.create({
       doc,
       selection: TextSelection.create(doc, textPosition(doc, 'child') - 1),
@@ -221,8 +212,6 @@ describe('dedentNestedOutlineItemBackward', () => {
     })
 
     expect(nextState).not.toBeNull()
-    expect(docToMarkdown(nextState!.doc)).toBe(
-      '- parent\n- child\n  - grandchild\n- sibling\n',
-    )
+    expect(docToMarkdown(nextState!.doc)).toBe('- parent\n- child\n  - grandchild\n- sibling\n')
   })
 })

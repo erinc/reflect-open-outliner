@@ -7,13 +7,7 @@ import { ChevronRightIcon } from '@/components/icons/chevron-right-icon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useNoteLinkNavigation } from '@/hooks/use-note-link-navigation'
 import { formatDayLabel } from '@/lib/dates'
-import {
-  addMonths,
-  buildMonthGrid,
-  monthLabel,
-  monthOf,
-  weekdayLabels,
-} from '@/lib/month-grid'
+import { addMonths, buildMonthGrid, monthLabel, monthOf, weekdayLabels } from '@/lib/month-grid'
 import { INDEX_QUERY_SCOPE } from '@/lib/query-client'
 import { cn } from '@/lib/utils'
 import { useGraph } from '@/providers/graph-provider'
@@ -31,7 +25,6 @@ interface DayCalendarProps {
 function toWeekStartsOn(weekStartDay: WeekStartDay): 0 | 1 {
   return weekStartDay === 'sunday' ? 0 : 1
 }
-
 
 const HEADER_BUTTON_CLASS =
   'cursor-default rounded-md transition-colors duration-100 hover:bg-surface-hover hover:text-text'
@@ -76,9 +69,7 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
   return (
     <div aria-label="Calendar" className="group min-w-36">
       <header className="flex items-center justify-between px-4 py-4">
-        <div className="cursor-default text-sm font-semibold text-text">
-          {monthLabel(month)}
-        </div>
+        <div className="cursor-default text-sm font-semibold text-text">{monthLabel(month)}</div>
         {/* window-drag-control lifts the buttons above the WindowDragRegion strip
             overlaying the title-bar band (see NavigateArrows for the contract). */}
         <nav className="window-drag-control flex items-center justify-center space-x-1 text-text-muted">
@@ -91,16 +82,18 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
             <ChevronLeftIcon />
           </button>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                aria-label="Jump to today"
-                onClick={() => navigate({ kind: 'today' })}
-                className={HEADER_BUTTON_CLASS}
-              >
-                <CalendarIcon />
-              </button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label="Jump to today"
+                  onClick={() => navigate({ kind: 'today' })}
+                  className={HEADER_BUTTON_CLASS}
+                >
+                  <CalendarIcon />
+                </button>
+              }
+            />
             <TooltipContent>Jump to Today</TooltipContent>
           </Tooltip>
           <button
@@ -136,9 +129,7 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
                     aria-label={formatDayLabel(cell.date, settings.dateFormat)}
                     aria-current={isToday ? 'date' : undefined}
                     aria-pressed={isSelected}
-                    onClick={(event) =>
-                      navigateNoteLink({ kind: 'daily', date: cell.date }, event)
-                    }
+                    onClick={(event) => navigateNoteLink({ kind: 'daily', date: cell.date }, event)}
                     className={cn(
                       'relative cursor-default py-1.5 text-xs',
                       // Today stays fully visible even as an adjacent-month
@@ -152,9 +143,7 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
                         aria-hidden
                         className={cn(
                           'absolute left-1/2 top-1/2 -ml-4 -mt-4 block h-8 w-8 rounded-md',
-                          isSelected
-                            ? 'bg-accent/10 dark:bg-accent/20'
-                            : 'bg-surface-active',
+                          isSelected ? 'bg-accent/10 dark:bg-accent/20' : 'bg-surface-active',
                         )}
                       />
                     ) : null}

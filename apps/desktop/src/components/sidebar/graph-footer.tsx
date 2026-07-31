@@ -77,36 +77,41 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
   return (
     <div className="flex items-center gap-1 px-4 py-3">
       <DropdownMenu>
-        <Tooltip delayDuration={700}>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                className="group h-auto min-w-0 flex-1 justify-start gap-2.5 px-0 py-1 text-left"
-              >
-                <span className="min-w-0 truncate text-xs font-medium text-text-secondary transition-colors duration-100 group-hover:text-text">
-                  {graph.name}
-                </span>
-                {dot !== null ? (
-                  <>
-                    <span
-                      aria-hidden
-                      className={cn('h-1.5 w-1.5 flex-none rounded-full', dot.className)}
-                    />
-                    <span role="status" className="sr-only">
-                      {dot.label}
+        <Tooltip>
+          <TooltipTrigger
+            delay={700}
+            render={
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="group h-auto min-w-0 flex-1 justify-start gap-2.5 px-0 py-1 text-left"
+                  >
+                    <span className="min-w-0 truncate text-xs font-medium text-text-secondary transition-colors duration-100 group-hover:text-text">
+                      {graph.name}
                     </span>
-                  </>
-                ) : null}
-                {indexing ? (
-                  <span role="status" className="sr-only">
-                    Indexing
-                  </span>
-                ) : null}
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
+                    {dot !== null ? (
+                      <>
+                        <span
+                          aria-hidden
+                          className={cn('h-1.5 w-1.5 flex-none rounded-full', dot.className)}
+                        />
+                        <span role="status" className="sr-only">
+                          {dot.label}
+                        </span>
+                      </>
+                    ) : null}
+                    {indexing ? (
+                      <span role="status" className="sr-only">
+                        Indexing
+                      </span>
+                    ) : null}
+                  </Button>
+                }
+              />
+            }
+          />
           <TooltipContent>{graph.root}</TooltipContent>
         </Tooltip>
         <DropdownMenuContent aria-label="Switch graph" side="top" sideOffset={6}>
@@ -114,25 +119,28 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
             const current = recent.root === graph.root
             const binding = graphSwitchBindingFor(index)
             return (
-              <Tooltip key={recent.root} delayDuration={700}>
-                <TooltipTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      if (!current) {
-                        void openRecent(recent.root)
-                      }
-                    }}
-                    className={MENU_ITEM_CLASS}
-                  >
-                    <GraphSwatch color={colorFor(recent.root)} className="size-3.5 rounded" />
-                    <span className="min-w-0 flex-1 truncate">{recent.name}</span>
-                    {current ? (
-                      <Check aria-hidden className="size-3.5 shrink-0 text-accent" />
-                    ) : binding !== null ? (
-                      <ShortcutKeys binding={binding} className="text-[10px]" />
-                    ) : null}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
+              <Tooltip key={recent.root}>
+                <TooltipTrigger
+                  delay={700}
+                  render={
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (!current) {
+                          void openRecent(recent.root)
+                        }
+                      }}
+                      className={MENU_ITEM_CLASS}
+                    >
+                      <GraphSwatch color={colorFor(recent.root)} className="size-3.5 rounded" />
+                      <span className="min-w-0 flex-1 truncate">{recent.name}</span>
+                      {current ? (
+                        <Check aria-hidden className="size-3.5 shrink-0 text-accent" />
+                      ) : binding !== null ? (
+                        <ShortcutKeys binding={binding} className="text-[10px]" />
+                      ) : null}
+                    </DropdownMenuItem>
+                  }
+                />
                 <TooltipContent side="right">{recent.root}</TooltipContent>
               </Tooltip>
             )
@@ -147,7 +155,7 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
               {GRAPH_COLOR_OPTIONS.map((option) => (
                 <DropdownMenuItem
                   key={option.id}
-                  onSelect={() => setColor(graph.root, option.id)}
+                  onClick={() => setColor(graph.root, option.id)}
                   className={MENU_ITEM_CLASS}
                 >
                   <GraphSwatch color={option.id} className="size-3.5 rounded" />
@@ -160,7 +168,7 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuItem
-            onSelect={() => {
+            onClick={() => {
               void revealItemInDir(graph.root).catch((cause: unknown) => {
                 console.error('open graph folder failed:', cause)
               })
@@ -172,16 +180,13 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
           </DropdownMenuItem>
           {/* Graph switching re-roots every window; note windows hide it. */}
           {isMainWindow() ? (
-            <DropdownMenuItem
-              onSelect={() => void chooseGraph()}
-              className={MENU_ITEM_CLASS}
-            >
+            <DropdownMenuItem onClick={() => void chooseGraph()} className={MENU_ITEM_CLASS}>
               <FolderOpen aria-hidden strokeWidth={1.75} className="size-3.5 shrink-0" />
               <span className="min-w-0 flex-1 truncate">Open another graph…</span>
             </DropdownMenuItem>
           ) : null}
           <DropdownMenuItem
-            onSelect={() => void runCommand('settings.open', context)}
+            onClick={() => void runCommand('settings.open', context)}
             className={MENU_ITEM_CLASS}
           >
             <Settings aria-hidden strokeWidth={1.75} className="size-3.5 shrink-0" />
@@ -190,24 +195,26 @@ export function GraphFooter({ graph, context }: GraphFooterProps): ReactElement 
         </DropdownMenuContent>
       </DropdownMenu>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Open settings"
-            aria-current={settingsActive ? 'page' : undefined}
-            onClick={() => void runCommand('settings.open', context)}
-            className={cn(
-              'size-7 shrink-0 text-text-muted transition-colors duration-100 hover:bg-surface-hover hover:text-text-secondary',
-              settingsActive
-                ? 'bg-surface-hover text-text dark:bg-transparent dark:text-accent'
-                : null,
-            )}
-          >
-            <Settings aria-hidden strokeWidth={1.75} className="size-4" />
-          </Button>
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Open settings"
+              aria-current={settingsActive ? 'page' : undefined}
+              onClick={() => void runCommand('settings.open', context)}
+              className={cn(
+                'size-7 shrink-0 text-text-muted transition-colors duration-100 hover:bg-surface-hover hover:text-text-secondary',
+                settingsActive
+                  ? 'bg-surface-hover text-text dark:bg-transparent dark:text-accent'
+                  : null,
+              )}
+            >
+              <Settings aria-hidden strokeWidth={1.75} className="size-4" />
+            </Button>
+          }
+        />
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>
     </div>

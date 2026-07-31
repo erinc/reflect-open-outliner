@@ -319,8 +319,7 @@ export function NoteEditor({
       openSelectionMenu: () => innerRef.current?.openSelectionMenu(),
       startPendingReplacement: (options) =>
         innerRef.current?.startPendingReplacement(options) ?? false,
-      appendPendingReplacementText: (text) =>
-        innerRef.current?.appendPendingReplacementText(text),
+      appendPendingReplacementText: (text) => innerRef.current?.appendPendingReplacementText(text),
       acceptPendingReplacement: (options) => innerRef.current?.acceptPendingReplacement(options),
       discardPendingReplacement: () => innerRef.current?.discardPendingReplacement(),
       findNext: () => innerRef.current?.findNext(),
@@ -414,9 +413,9 @@ export function NoteEditor({
       // the source element drives the View Transition zoom.
       const sourceImage =
         event.target instanceof HTMLElement
-          ? event.target
+          ? (event.target
               .closest('.md-image-view-preview, .md-image-preview')
-              ?.querySelector('img') ?? null
+              ?.querySelector('img') ?? null)
           : null
       openLightbox(sourceImage, {
         src: displayUrl,
@@ -460,11 +459,7 @@ export function NoteEditor({
         // which a touch webview can express. Turning it off also drops the drop
         // indicator, which meowdown gates on the same prop.
         blockHandle={isTouchEditorSurface() ? false : blockHandle}
-        editorClassName={cn(
-          'reflect-editor',
-          outlineMode && 'reflect-outline-editor',
-          className,
-        )}
+        editorClassName={cn('reflect-editor', outlineMode && 'reflect-outline-editor', className)}
         {...(titlePlaceholder !== undefined ? { placeholder: titlePlaceholder } : {})}
         onDocChange={handleDocChange}
         onWikilinkClick={handleWikilinkClick}
@@ -486,7 +481,12 @@ export function NoteEditor({
       >
         {outlineMode ? <OutlineMode allowTitle={outlineTitle} /> : null}
         <EditorInputTraits />
-        <FormattingToolbarBridge outlineMode={outlineMode} />
+        {/* Only a pane that persists files gets the toolbar's attach button;
+            `handleFilePaste` is the same handler meowdown pastes through. */}
+        <FormattingToolbarBridge
+          outlineMode={outlineMode}
+          {...(saveFile !== undefined ? { saveFile: handleFilePaste } : {})}
+        />
         {renderWikilinkHoverCard !== undefined ? (
           <WikilinkHoverCard className="reflect-hover-card">
             {renderWikilinkHoverCard}

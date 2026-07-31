@@ -1,9 +1,6 @@
 import { errorMessage, isAppError, toAppError, type AppError } from '../errors'
-import {
-  pickTranscriptionConfig,
-  type AiProvidersState,
-} from '../ai/provider-config'
-import { aiKeySecretName } from '../ai/secrets'
+import { pickTranscriptionConfig, type AiProvidersState } from '../ai/provider-config'
+import { aiApiKeyForConfig, aiKeySecretName } from '../ai/secrets'
 import {
   audioMemoEnrichmentConfig,
   pickAudioMemoEnrichmentConfig,
@@ -519,7 +516,7 @@ export async function reconcileAudioMemos(
       ? null
       : enrichmentConfig.id === config.id
         ? apiKey
-        : await getKey(enrichmentConfig.id)
+        : await aiApiKeyForConfig(enrichmentConfig).catch(() => null)
   const fallbackEnrichmentConfig = audioMemoEnrichmentConfig(config)
   const enrichmentCredentials: AudioMemoEnrichmentCredentials | null =
     enrichmentConfig !== null && enrichmentApiKey !== null
@@ -559,7 +556,12 @@ export async function reconcileAudioMemos(
         }
         memosNoteTitle ??= await ensureBacklinkTarget(MEMOS_NOTE_TITLE, input.generation)
         if (stale()) return stalled()
-        const note = transcriptionNote(memo, memo.title, stubTranscriptBody(), recordingLinks(session))
+        const note = transcriptionNote(
+          memo,
+          memo.title,
+          stubTranscriptBody(),
+          recordingLinks(session),
+        )
         await writeNote(memo.notePath, note, input.generation)
         await ensureDailyBacklink(memo, memo.title, memosNoteTitle, input.generation)
         transcribed += 1

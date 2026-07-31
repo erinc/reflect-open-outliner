@@ -25,10 +25,7 @@ function commandClick(element: HTMLElement): void {
   fireEvent.click(element, { metaKey: true })
 }
 
-async function renderOutline(
-  markdown: string,
-  outlineTitle = false,
-): Promise<NoteEditorHandle> {
+async function renderOutline(markdown: string, outlineTitle = false): Promise<NoteEditorHandle> {
   const handleRef = createRef<NoteEditorHandle>()
   await render(
     <NoteEditor
@@ -81,9 +78,7 @@ describe('NoteEditor outline mode', () => {
   it('shows hierarchy guides only when an item has nested children', async () => {
     await renderOutline('- parent\n  - child\n    - grandchild\n- sibling')
 
-    expect(editorRoot.element().classList.contains('reflect-outline-editor')).toBe(
-      true,
-    )
+    expect(editorRoot.element().classList.contains('reflect-outline-editor')).toBe(true)
     const items = editorRoot.element().querySelectorAll('.prosemirror-flat-list')
     expect(items).toHaveLength(4)
     expect(getComputedStyle(items[0]!, '::after').content).toBe('""')
@@ -119,9 +114,7 @@ describe('NoteEditor outline mode', () => {
     })
     const breadcrumbs = page.getByRole('navigation', { name: 'Focused block path' })
     await expect.element(breadcrumbs).toBeVisible()
-    expect(
-      breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
-    ).toBe('parent')
+    expect(breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent).toBe('parent')
     expect(getComputedStyle(items[1]!).display).not.toBe('none')
     expect(getComputedStyle(items[2]!).display).not.toBe('none')
     expect(getComputedStyle(items[3]!).display).not.toBe('none')
@@ -131,9 +124,9 @@ describe('NoteEditor outline mode', () => {
     commandClick(childMarker)
 
     await vi.waitFor(() => {
-      expect(
-        breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
-      ).toBe('child')
+      expect(breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent).toBe(
+        'child',
+      )
     })
     expect(getComputedStyle(items[0]!).display).toBe('contents')
     expect(getComputedStyle(items[3]!).display).toBe('none')
@@ -152,12 +145,8 @@ describe('NoteEditor outline mode', () => {
 
   it('folds a bullet on plain click and focuses it on Command-click', async () => {
     await renderOutline('- parent\n  - child\n- sibling')
-    const parent = editorRoot
-      .element()
-      .querySelector<HTMLElement>('.prosemirror-flat-list')
-    const parentMarker = parent?.querySelector<HTMLElement>(
-      ':scope > .list-marker',
-    )
+    const parent = editorRoot.element().querySelector<HTMLElement>('.prosemirror-flat-list')
+    const parentMarker = parent?.querySelector<HTMLElement>(':scope > .list-marker')
     if (
       parent === null ||
       parent === undefined ||
@@ -216,16 +205,14 @@ describe('NoteEditor outline mode', () => {
 
     const breadcrumbs = page.getByRole('navigation', { name: 'Focused block path' })
     await expect.element(breadcrumbs).toBeVisible()
-    expect(
-      breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
-    ).toBe('child')
+    expect(breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent).toBe('child')
 
     await userEvent.keyboard('{Escape}')
 
     await vi.waitFor(() => {
-      expect(
-        breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent,
-      ).toBe('parent')
+      expect(breadcrumbs.element().querySelector('[aria-current="page"]')?.textContent).toBe(
+        'parent',
+      )
     })
     expect(editorRoot.element().textContent).toContain('child')
 
@@ -252,9 +239,7 @@ describe('NoteEditor outline mode', () => {
     await vi.waitFor(() => {
       expect(handle.getMarkdown()).toBe('- parent\n  - child\n- sibling\n')
     })
-    expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(
-      true,
-    )
+    expect(editorRoot.element().hasAttribute('data-reflect-outline-focus')).toBe(true)
     const items = editorRoot.element().querySelectorAll('.prosemirror-flat-list')
     expect(items).toHaveLength(3)
     expect(getComputedStyle(items[2]!).display).toBe('none')
@@ -306,9 +291,7 @@ describe('NoteEditor outline mode', () => {
   it('deletes a cleared first child and moves the caret to its parent end', async () => {
     const handle = await renderOutline('- parent\n  - child')
 
-    await userEvent.keyboard(
-      '{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}!',
-    )
+    await userEvent.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}{Backspace}!')
 
     await vi.waitFor(() => {
       expect(handle.getMarkdown()).toBe('- parent!\n')

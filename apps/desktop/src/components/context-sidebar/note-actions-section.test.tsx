@@ -71,7 +71,9 @@ describe('NoteActionsSection pin toggle', () => {
   })
 
   it('offers Un-pin this note when the index lists the note as pinned', async () => {
-    getPinnedNotes.mockResolvedValue([{ path: 'daily/2026-06-10.md', title: 'June 10th, 2026', dailyDate: '2026-06-10' }])
+    getPinnedNotes.mockResolvedValue([
+      { path: 'daily/2026-06-10.md', title: 'June 10th, 2026', dailyDate: '2026-06-10' },
+    ])
     const view = await renderSection('daily/2026-06-10.md')
     await expect.element(view.getByText('Un-pin this note')).toBeInTheDocument()
     await userEvent.click(view.getByRole('button', { name: /Un-pin this note/ }))
@@ -140,7 +142,6 @@ describe('NoteActionsSection pin toggle', () => {
     expect(operationFail).toHaveBeenCalled()
     await view.unmount()
   })
-
 })
 
 describe('NoteActionsSection private toggle', () => {
@@ -180,7 +181,6 @@ describe('NoteActionsSection private toggle', () => {
     expect(operationFail).toHaveBeenCalled()
     await view.unmount()
   })
-
 })
 
 describe('NoteActionsSection deep-link action', () => {

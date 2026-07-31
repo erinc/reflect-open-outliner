@@ -60,11 +60,7 @@ export function DailyEventsSection({ date }: DailyEventsSectionProps): ReactElem
         ))}
       </ul>
       {pendingEvent !== null && (
-        <AddMeetingDialog
-          date={date}
-          event={pendingEvent}
-          onClose={() => setPendingEvent(null)}
-        />
+        <AddMeetingDialog date={date} event={pendingEvent} onClose={() => setPendingEvent(null)} />
       )}
     </SidebarSection>
   )

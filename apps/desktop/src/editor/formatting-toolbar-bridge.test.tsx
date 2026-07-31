@@ -28,8 +28,12 @@ interface Setup {
 async function setupEditor(
   initialContent: string,
   touchEditor = true,
-  outlineMode = false,
+  outlineModeOrSaveFile: boolean | ((file: File) => Promise<string | null>) = false,
+  saveFile?: (file: File) => Promise<string | null>,
 ): Promise<Setup> {
+  const outlineMode = typeof outlineModeOrSaveFile === 'boolean' ? outlineModeOrSaveFile : false
+  const resolvedSaveFile =
+    typeof outlineModeOrSaveFile === 'function' ? outlineModeOrSaveFile : saveFile
   setPlatformSurface({ touchEditor })
   const grabbed: { current: NoteEditorHandle | null } = { current: null }
   const editor = (
@@ -37,6 +41,7 @@ async function setupEditor(
       initialContent={initialContent}
       outlineMode={outlineMode}
       onWikilinkSearch={async () => []}
+      {...(resolvedSaveFile !== undefined ? { saveFile: resolvedSaveFile } : {})}
       handleRef={(handle) => {
         grabbed.current = handle
       }}
@@ -79,6 +84,7 @@ describe('FormattingToolbarBridge', () => {
       canDedent: true,
       canMoveUp: true,
       canMoveDown: false,
+      canAttachFiles: false,
     })
   })
 
@@ -119,7 +125,7 @@ describe('FormattingToolbarBridge', () => {
     await pmRoot.getByText('alpha').click()
     await expect.element(toolbarState).toHaveTextContent('has-toolbar')
 
-    captured.toolbar?.commands.toggleBulletList()
+    captured.toolbar?.commands.cycleBulletOrderedList()
     await vi.waitFor(() => {
       expect(handle.getMarkdown()).toBe('- alpha\n')
     })
@@ -136,7 +142,7 @@ describe('FormattingToolbarBridge', () => {
     await pmRoot.getByText('alpha').click()
     await expect.element(toolbarState).toHaveTextContent('has-toolbar')
 
-    captured.toolbar?.commands.toggleBulletList()
+    captured.toolbar?.commands.cycleBulletOrderedList()
     await vi.waitFor(() => {
       expect(handle.getMarkdown()).toBe('- alpha\n')
     })
@@ -191,6 +197,44 @@ describe('FormattingToolbarBridge', () => {
 
     captured.toolbar?.commands.insertTrigger('[[')
     await expect.element(page.getByTestId('wikilink-menu')).toBeInTheDocument()
+  })
+
+  it('persists attached files and inserts their markdown', async () => {
+    const saveFile = vi.fn(async (file: File) => `assets/${file.name}`)
+    const { handle } = await setupEditor('alpha', true, saveFile)
+
+    await pmRoot.getByText('alpha').click()
+    await expect.element(toolbarState).toHaveTextContent('has-toolbar')
+    expect(captured.toolbar?.capabilities.canAttachFiles).toBe(true)
+    handle.setSelection('end')
+
+    await captured.toolbar?.commands.attachFiles([
+      new File(['png'], 'photo.png', { type: 'image/png' }),
+      new File(['txt'], 'notes.txt', { type: 'text/plain' }),
+    ])
+
+    expect(saveFile).toHaveBeenCalledTimes(2)
+    await vi.waitFor(() => {
+      // An image becomes an embed and any other file a link, exactly as a
+      // paste of the same files would.
+      expect(handle.getMarkdown()).toContain('![](assets/photo.png)')
+      expect(handle.getMarkdown()).toContain('[notes.txt](assets/notes.txt)')
+    })
+  })
+
+  it('inserts nothing when the save declines the file', async () => {
+    const saveFile = vi.fn(async () => null)
+    const { handle } = await setupEditor('alpha', true, saveFile)
+
+    await pmRoot.getByText('alpha').click()
+    await expect.element(toolbarState).toHaveTextContent('has-toolbar')
+
+    await captured.toolbar?.commands.attachFiles([
+      new File(['png'], 'photo.png', { type: 'image/png' }),
+    ])
+
+    expect(saveFile).toHaveBeenCalledOnce()
+    expect(handle.getMarkdown()).toBe('alpha\n')
   })
 
   it('clears its published toolbar on unmount', async () => {

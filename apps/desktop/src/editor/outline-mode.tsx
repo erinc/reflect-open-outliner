@@ -96,10 +96,7 @@ export function normalizeOutlineTransaction(
 
   const transaction = state.tr
   for (const action of actions.reverse()) {
-    const item = listType.createChecked(
-      { kind: 'bullet', collapsed: false },
-      action.node,
-    )
+    const item = listType.createChecked({ kind: 'bullet', collapsed: false }, action.node)
     transaction.replaceWith(action.from, action.to, item)
   }
   return transaction.docChanged ? transaction : null
@@ -147,10 +144,7 @@ export function canStrictIndent(state: EditorState): boolean {
 
 function isSelectionInRootItem(state: EditorState): boolean {
   const context = nearestListContext(state)
-  return (
-    context !== null &&
-    state.selection.$from.node(context.depth - 1).type.name === 'doc'
-  )
+  return context !== null && state.selection.$from.node(context.depth - 1).type.name === 'doc'
 }
 
 /** Merge the current outline sibling into the preceding one at its text start. */
@@ -158,8 +152,7 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
   const context = nearestListContext(state)
   const { $from } = state.selection
   const currentBlock = context?.node.firstChild
-  const atBlockStart =
-    view?.endOfTextblock('backward', state) ?? $from.parentOffset === 0
+  const atBlockStart = view?.endOfTextblock('backward', state) ?? $from.parentOffset === 0
   if (
     !state.selection.empty ||
     context === null ||
@@ -174,8 +167,7 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
 
   const parentDepth = context.depth - 1
   const index = $from.index(parentDepth)
-  const previousItem =
-    index > 0 ? $from.node(parentDepth).child(index - 1) : null
+  const previousItem = index > 0 ? $from.node(parentDepth).child(index - 1) : null
   const previousBlock = previousItem?.firstChild
   if (
     previousItem?.type.name !== 'list' ||
@@ -187,9 +179,7 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
   }
 
   if (dispatch !== undefined) {
-    const mergedBlock = previousBlock.copy(
-      previousBlock.content.append(currentBlock.content),
-    )
+    const mergedBlock = previousBlock.copy(previousBlock.content.append(currentBlock.content))
     const mergedChildren = [mergedBlock]
     for (let childIndex = 1; childIndex < previousItem.childCount; childIndex += 1) {
       mergedChildren.push(previousItem.child(childIndex))
@@ -200,10 +190,7 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
 
     const from = $from.before(context.depth) - previousItem.nodeSize
     const to = $from.after(context.depth)
-    const mergedItem = previousItem.type.createChecked(
-      previousItem.attrs,
-      mergedChildren,
-    )
+    const mergedItem = previousItem.type.createChecked(previousItem.attrs, mergedChildren)
     const transaction = state.tr.replaceWith(from, to, mergedItem)
     const joinPosition = from + 2 + previousBlock.content.size
     dispatch(
@@ -219,9 +206,7 @@ export const joinOutlineItemBackward: Command = (state, dispatch, view) => {
 export const joinOutlineBlockBackward: Command = (state, dispatch, view) => {
   const context = nearestListContext(state)
   const { $from } = state.selection
-  const atBlockStart =
-    view?.endOfTextblock('backward', state) ??
-    $from.parentOffset === 0
+  const atBlockStart = view?.endOfTextblock('backward', state) ?? $from.parentOffset === 0
   if (
     !state.selection.empty ||
     context === null ||
@@ -246,14 +231,8 @@ export const joinOutlineBlockBackward: Command = (state, dispatch, view) => {
       children.push(child)
       precedingSize += child.nodeSize
     }
-    children.push(
-      previousBlock.copy(previousBlock.content.append($from.parent.content)),
-    )
-    for (
-      let childIndex = index + 1;
-      childIndex < context.node.childCount;
-      childIndex += 1
-    ) {
+    children.push(previousBlock.copy(previousBlock.content.append($from.parent.content)))
+    for (let childIndex = index + 1; childIndex < context.node.childCount; childIndex += 1) {
       children.push(context.node.child(childIndex))
     }
 
@@ -261,10 +240,7 @@ export const joinOutlineBlockBackward: Command = (state, dispatch, view) => {
     const transaction = state.tr.replaceWith(
       itemFrom,
       $from.after(context.depth),
-      context.node.type.createChecked(
-        context.node.attrs,
-        Fragment.fromArray(children),
-      ),
+      context.node.type.createChecked(context.node.attrs, Fragment.fromArray(children)),
     )
     dispatch(
       transaction
@@ -284,9 +260,7 @@ export const joinOutlineBlockBackward: Command = (state, dispatch, view) => {
 export const dedentNestedOutlineItemBackward: Command = (state, dispatch, view) => {
   const context = nearestListContext(state)
   const { $from } = state.selection
-  const atBlockStart =
-    view?.endOfTextblock('backward', state) ??
-    $from.parentOffset === 0
+  const atBlockStart = view?.endOfTextblock('backward', state) ?? $from.parentOffset === 0
   if (
     !state.selection.empty ||
     context === null ||
@@ -311,11 +285,7 @@ export const dedentNestedOutlineItemBackward: Command = (state, dispatch, view) 
     }
     const outdentedChildren: ProseMirrorNode[] = []
     context.node.forEach((child) => outdentedChildren.push(child))
-    for (
-      let childIndex = index + 1;
-      childIndex < parentItem.childCount;
-      childIndex += 1
-    ) {
+    for (let childIndex = index + 1; childIndex < parentItem.childCount; childIndex += 1) {
       outdentedChildren.push(parentItem.child(childIndex))
     }
 
@@ -338,10 +308,7 @@ export const dedentNestedOutlineItemBackward: Command = (state, dispatch, view) 
     dispatch(
       transaction
         .setSelection(
-          TextSelection.create(
-            transaction.doc,
-            parentFrom + parent.nodeSize + selectionOffset,
-          ),
+          TextSelection.create(transaction.doc, parentFrom + parent.nodeSize + selectionOffset),
         )
         .scrollIntoView(),
     )
@@ -351,11 +318,7 @@ export const dedentNestedOutlineItemBackward: Command = (state, dispatch, view) 
 
 const deleteEmptyOutlineItem: Command = (state, dispatch) => {
   const context = nearestListContext(state)
-  if (
-    !state.selection.empty ||
-    context === null ||
-    !isEmptyOutlineItem(context.node)
-  ) {
+  if (!state.selection.empty || context === null || !isEmptyOutlineItem(context.node)) {
     return false
   }
 
@@ -398,10 +361,7 @@ const insertEmptyRootSibling: Command = (state, dispatch) => {
     )
     const insertAt = state.selection.$from.after(context.depth)
     const transaction = state.tr.insert(insertAt, emptyItem)
-    const selection = Selection.near(
-      transaction.doc.resolve(insertAt + 2),
-      1,
-    )
+    const selection = Selection.near(transaction.doc.resolve(insertAt + 2), 1)
     dispatch(transaction.setSelection(selection).scrollIntoView())
   }
   return true
