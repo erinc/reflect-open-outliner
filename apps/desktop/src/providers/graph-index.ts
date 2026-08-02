@@ -205,6 +205,12 @@ export function createGraphIndex(options: GraphIndexOptions = {}): GraphIndex {
     onProgress?.('reconciling')
     const controller = new AbortController()
     abort = controller
+    // Pass telemetry: `worked` (files actually read) is the one number that
+    // says whether this launch took the expensive branch — a routine open
+    // logs 0.
+    const passStarted = performance.now()
+    let passTotal = 0
+    let passWorked = 0
     done = (async () => {
       // A subscription created but not yet adopted (superseded mid-flight, or a
       // later step threw) is torn down in `finally` so listeners can't leak.
@@ -229,16 +235,22 @@ export function createGraphIndex(options: GraphIndexOptions = {}): GraphIndex {
                 },
               }
             : {}),
-          ...(onFileProgress !== undefined
-            ? {
-                onFileProgress: (progressDone: number, total: number, worked: number) => {
-                  if (!isStale()) {
-                    onFileProgress(progressDone, total, worked)
-                  }
-                },
-              }
-            : {}),
+          onFileProgress: (progressDone: number, total: number, worked: number) => {
+            passTotal = total
+            passWorked = worked
+            if (onFileProgress !== undefined && !isStale()) {
+              onFileProgress(progressDone, total, worked)
+            }
+          },
         })
+        // Superseded passes (aborted, stale under a newer open, or suspended
+        // mid-flight) resolve early with partial counters — logging them as
+        // "finished" would misread as a fast healthy pass.
+        if (!controller.signal.aborted && !isStale() && !isSuspended()) {
+          console.info(
+            `index: pass finished in ${Math.round(performance.now() - passStarted)}ms — read ${passWorked} of ${passTotal} files`,
+          )
+        }
         if (isStale() || isSuspended()) {
           return
         }

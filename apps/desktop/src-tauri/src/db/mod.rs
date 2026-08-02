@@ -24,7 +24,7 @@ use std::sync::{Mutex, MutexGuard};
 
 use rusqlite::{params, Connection};
 use serde_json::{Map, Value};
-use tauri::State;
+use tauri::{Manager, State};
 
 use crate::background_task::{self, BackgroundTaskState};
 use crate::error::{AppError, AppResult};
@@ -43,25 +43,57 @@ pub use write::IndexedNote;
 /// mutate a newly-opened index, regardless of caller timing (needed once the
 /// watcher in Plan 04b indexes outside the serialized open flow).
 ///
-/// The single connection also means reads (`db_query`) and writes (`index_*`)
-/// are serialized — a long FTS scan briefly blocks an apply and vice versa.
-/// Acceptable at first-wave scale; a read-pool / WAL reader split can come later.
 #[derive(Default)]
 struct IndexInner {
     generation: u64,
     conn: Option<Connection>,
+    /// The graph root this generation's index was opened for. Reconcile
+    /// scans list *this* root, never the graph state's current one: with
+    /// async commands there is no main-thread FIFO ordering scans against
+    /// `graph_open`, so a queued scan could otherwise walk a freshly-swapped
+    /// root and diff another graph's files against this index — in the
+    /// window before the switch's `index_open` bumps the generation, that
+    /// delta would pass the staleness gate and drive cross-graph writes.
+    root: Option<std::path::PathBuf>,
 }
 
-/// The active graph's index state (`conn` is `None` until `index_open`).
+/// The `db_query` reader: a second, **read-only** connection under its own
+/// lock. Queries run on the blocking pool now, and the write commands are
+/// still synchronous main-thread calls — if both shared one mutex, a long
+/// FTS scan holding it would make the next `index_apply`/`index_touch` block
+/// the iOS main thread for the read's duration, recreating the exact
+/// touch-delivery stall the async conversion removed. Under WAL the reader
+/// sees the last committed state, so a query after an awaited write still
+/// reads its result; it just never contends with one. Rebound (with its own
+/// generation copy, so the pair swaps atomically for readers of *this* lock)
+/// by `index_open` while the writer lock is held — lock order is always
+/// writer → reader, nothing locks the reverse way.
 #[derive(Default)]
-pub struct IndexState(Mutex<IndexInner>);
+struct ReadInner {
+    generation: u64,
+    conn: Option<Connection>,
+}
+
+/// The active graph's index state (`conn`s are `None` until `index_open`).
+#[derive(Default)]
+pub struct IndexState {
+    inner: Mutex<IndexInner>,
+    read: Mutex<ReadInner>,
+}
 
 fn lock_state<'a>(index: &'a State<IndexState>) -> AppResult<MutexGuard<'a, IndexInner>> {
-    index.0.lock().map_err(|err| {
+    index.inner.lock().map_err(|err| {
         // A poisoned lock means a command panicked while holding it — the panic
         // itself is the bug; this context points at the blast radius.
         tracing::error!(?err, "index state lock poisoned by an earlier panic");
         AppError::io("index state lock poisoned")
+    })
+}
+
+fn lock_read<'a>(index: &'a State<IndexState>) -> AppResult<MutexGuard<'a, ReadInner>> {
+    index.read.lock().map_err(|err| {
+        tracing::error!(?err, "index read lock poisoned by an earlier panic");
+        AppError::io("index read lock poisoned")
     })
 }
 
@@ -124,10 +156,24 @@ pub fn index_open(
         .ok_or_else(AppError::no_graph)?;
     let mut state = lock_state(&index)?;
     state.generation += 1;
-    // Drop the old connection before opening; if the open fails we return with
-    // `conn = None` (reads then error) rather than a stale connection.
+    // Drop the old connections before opening; if an open fails we return
+    // with `conn = None` (reads then error) rather than a stale connection.
+    // The root is rebound with the writer, under the same lock, so a
+    // generation can never pair with another graph's root (see
+    // `IndexInner::root`). The reader rebinds while the writer lock is still
+    // held (writer → reader lock order), after the writer created/migrated
+    // the file it opens read-only.
     state.conn = None;
+    state.root = None;
+    {
+        let mut read = lock_read(&index)?;
+        read.conn = None;
+    }
     state.conn = Some(migrations::open_index_at(&root)?);
+    let mut read = lock_read(&index)?;
+    read.conn = Some(migrations::open_index_read_only_at(&root)?);
+    read.generation = state.generation;
+    state.root = Some(root);
     Ok(state.generation)
 }
 
@@ -338,28 +384,57 @@ pub fn index_move<R: tauri::Runtime>(
 
 /// Compute the open-path reconcile delta natively (see [`scan`]): list the
 /// graph's notes, compare against the stored rows, and return only what
-/// needs work. The listing happens **before** the index lock is taken, so
-/// thousands of stats never block concurrent reads. A stale generation
-/// returns the empty scan — that pass is superseded and its writes would be
-/// dropped anyway, so "nothing to do" is the honest answer.
+/// needs work. The walk runs **without** the index lock held, so thousands
+/// of stats never block concurrent reads; the generation is checked again
+/// after it, so a graph switch mid-walk yields the empty scan. A stale
+/// generation returns the empty scan — that pass is superseded and its
+/// writes would be dropped anyway, so "nothing to do" is the honest answer.
 #[tauri::command]
-pub fn index_reconcile_scan(
+pub async fn index_reconcile_scan<R: tauri::Runtime>(
     generation: u64,
-    graph: State<GraphState>,
-    index: State<IndexState>,
+    app: tauri::AppHandle<R>,
 ) -> AppResult<scan::ReconcileScan> {
-    let root = crate::fs::current_root(&graph)?;
-    let files = crate::fs::note_files(&root);
-    let state = lock_state(&index)?;
-    if state.generation != generation {
-        return Ok(scan::ReconcileScan::empty());
-    }
-    let conn = state.conn.as_ref().ok_or_else(AppError::no_graph)?;
-    let now_ms = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|elapsed| elapsed.as_millis() as u64)
-        .unwrap_or(0);
-    scan::scan_reconcile(conn, &files, now_ms)
+    // Async on purpose: this is one uninterruptible O(graph) walk + table
+    // read, and as a sync command it occupied the iOS main thread — the
+    // post-paint "I can see a note but can't tap it" freeze on every open.
+    crate::blocking::run_blocking(move || {
+        let started = std::time::Instant::now();
+        let index = app.state::<IndexState>();
+        // The root comes from the index session, not the graph state: async
+        // commands have no ordering against `graph_open`, and listing a
+        // just-swapped root against this generation's rows would diff two
+        // different graphs (see `IndexInner::root`).
+        let root = {
+            let state = lock_state(&index)?;
+            if state.generation != generation {
+                return Ok(scan::ReconcileScan::empty());
+            }
+            state.root.clone().ok_or_else(AppError::no_graph)?
+        };
+        let walk_started = std::time::Instant::now();
+        let files = crate::fs::note_files(&root);
+        let walk_ms = walk_started.elapsed().as_millis() as u64;
+        let state = lock_state(&index)?;
+        if state.generation != generation {
+            return Ok(scan::ReconcileScan::empty());
+        }
+        let conn = state.conn.as_ref().ok_or_else(AppError::no_graph)?;
+        let now_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|elapsed| elapsed.as_millis() as u64)
+            .unwrap_or(0);
+        let scan = scan::scan_reconcile(conn, &files, now_ms)?;
+        tracing::info!(
+            files = scan.total,
+            candidates = scan.candidates.len(),
+            orphans = scan.orphans.len(),
+            walk_ms,
+            elapsed_ms = started.elapsed().as_millis() as u64,
+            "index_reconcile_scan"
+        );
+        Ok(scan)
+    })
+    .await
 }
 
 /// One `index_touch` entry: re-stamp `path`'s stored mtime to `mtime`
@@ -532,13 +607,38 @@ pub fn embed_remove(
 }
 
 /// Execute a read query (compiled by Kysely on the frontend) and return rows.
+///
+/// Async on purpose: sync commands run on the main thread, which on iOS also
+/// owns touch delivery — a long FTS scan there reads as a frozen app. Runs
+/// on the dedicated read-only connection ([`ReadInner`]) so it never holds
+/// the writer lock a sync write command would block the main thread waiting
+/// for.
 #[tauri::command]
-pub fn db_query(
+pub async fn db_query<R: tauri::Runtime>(
     sql: String,
     params: Vec<Value>,
-    index: State<IndexState>,
+    app: tauri::AppHandle<R>,
 ) -> AppResult<Vec<Map<String, Value>>> {
-    let state = lock_state(&index)?;
-    let conn = state.conn.as_ref().ok_or_else(AppError::no_graph)?;
-    query::run_query(conn, &sql, &params)
+    // Pin the index session before the hop: with no main-thread FIFO, a
+    // graph switch can rebind the index between invoke and execution, and a
+    // query issued for graph A must not return graph B's rows — the frontend
+    // caches results under root-scoped keys with `staleTime: Infinity`, so
+    // one crossed response would be served as fresh forever. An erroring
+    // superseded query is honest instead: its observers unmounted with the
+    // switch, so nothing retries it against the wrong graph.
+    let requested = {
+        let index = app.state::<IndexState>();
+        let generation = lock_read(&index)?.generation;
+        generation
+    };
+    crate::blocking::run_blocking(move || {
+        let index = app.state::<IndexState>();
+        let read = lock_read(&index)?;
+        if read.generation != requested {
+            return Err(AppError::io("index reopened during query"));
+        }
+        let conn = read.conn.as_ref().ok_or_else(AppError::no_graph)?;
+        query::run_query(conn, &sql, &params)
+    })
+    .await
 }

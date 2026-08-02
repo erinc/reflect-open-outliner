@@ -3,6 +3,7 @@ import { useEditor } from '@meowdown/react'
 import { buildFileMarkdown, type EditorExtension } from '@meowdown/core'
 import { toPortableImageFile } from '@/lib/image-file'
 import { isTouchEditorSurface } from '@/lib/platform-surface'
+import { whenEditorMounted } from './when-editor-mounted'
 import {
   clearFormattingToolbar,
   publishFormattingToolbar,
@@ -60,18 +61,11 @@ export function FormattingToolbarBridge({
       return
     }
     const owner = Symbol('formatting-toolbar')
-    let frame: number | null = null
     let teardown: (() => void) | null = null
 
-    // Same mount dance as EditorInputTraits: ProseKit attaches the view via
-    // ref before effects run, so this attaches immediately in practice — but
-    // the timing is ProseKit's, so a not-yet-mounted editor retries per frame.
-    const attach = (): void => {
-      if (!editor.mounted) {
-        frame = requestAnimationFrame(attach)
-        return
-      }
-      frame = null
+    // Same mount dance as EditorInputTraits — see `whenEditorMounted` for
+    // why the wait is bounded.
+    const cancel = whenEditorMounted(editor, () => {
       const dom = editor.view.dom
 
       function readCapabilities(): FormattingToolbarCapabilities {
@@ -199,12 +193,9 @@ export function FormattingToolbarBridge({
         }
         clearFormattingToolbar(owner)
       }
-    }
-    attach()
+    })
     return () => {
-      if (frame !== null) {
-        cancelAnimationFrame(frame)
-      }
+      cancel()
       teardown?.()
     }
     // `canAttachFiles` is fixed per editor in practice (a pane either has a

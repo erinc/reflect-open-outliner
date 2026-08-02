@@ -28,7 +28,9 @@ use std::path::Path;
 use serde::Serialize;
 use tauri::State;
 
-use crate::error::{AppError, AppResult};
+use crate::blocking::run_blocking;
+
+use crate::error::AppResult;
 use crate::fs::GraphState;
 
 use self::commit::CommitOutcome;
@@ -116,16 +118,6 @@ fn setup(root: &Path, remote_url: Option<String>, branch: Option<String>) -> App
     status(root)
 }
 
-async fn run_blocking<T, F>(task: F) -> AppResult<T>
-where
-    T: Send + 'static,
-    F: FnOnce() -> AppResult<T> + Send + 'static,
-{
-    tauri::async_runtime::spawn_blocking(task)
-        .await
-        .map_err(|err| AppError::io(format!("git task panicked: {err}")))?
-}
-
 /// Snapshot the backup repository (cheap, no network).
 #[tauri::command]
 pub async fn git_status(generation: u64, state: State<'_, GraphState>) -> AppResult<GitStatus> {
@@ -173,7 +165,17 @@ pub async fn git_commit_all(
     state: State<'_, GraphState>,
 ) -> AppResult<CommitOutcome> {
     let root = crate::fs::root_for_generation(&state, generation)?;
-    run_blocking(move || commit::commit_all(&root, &message, MAX_FILE_BYTES)).await
+    let started = std::time::Instant::now();
+    let outcome = run_blocking(move || commit::commit_all(&root, &message, MAX_FILE_BYTES)).await;
+    if let Ok(outcome) = &outcome {
+        tracing::info!(
+            committed = outcome.committed,
+            ahead = outcome.ahead,
+            elapsed_ms = started.elapsed().as_millis() as u64,
+            "git_commit_all"
+        );
+    }
+    outcome
 }
 
 /// Fetch `origin` and report ahead/behind for the current branch.

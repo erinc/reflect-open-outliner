@@ -15,6 +15,7 @@
 //! [`error`] (the shared error contract).
 
 mod background_task;
+mod blocking;
 mod calendar;
 mod capture;
 mod conflict;
@@ -28,6 +29,8 @@ mod graph_gitignore;
 mod icloud;
 mod link_preview;
 mod menu;
+#[cfg(any(target_os = "ios", test))]
+mod native_diagnostics;
 mod quit;
 mod recents;
 mod secrets;
@@ -48,11 +51,6 @@ mod watcher;
 #[cfg(mobile)]
 #[path = "watcher_mobile.rs"]
 mod watcher;
-
-// TEMPORARY (Plan 19 spike A): on-device capability probes; delete with the
-// spike once the runtime gate verdict is recorded in the plan.
-#[cfg(mobile)]
-mod spike_mobile;
 
 use tauri::{Emitter, Manager};
 
@@ -205,15 +203,16 @@ pub fn run() {
     // The main window starts hidden (`visible: false`); desktop reveals it on
     // Ready after restoring geometry, but mobile has no window-state plugin,
     // so show it here or the UI would never appear.
-    //
-    // (Also runs the TEMPORARY Plan 19 spike-A capability probe — delete that
-    // line with the spike, but keep the window show.)
     #[cfg(mobile)]
     let builder = builder.setup(|app| {
+        // Before anything else can crash: this is the only reporter that sees
+        // native failures (Rust panics, Swift crashes, main-thread hangs,
+        // watchdog kills), which reach TestFlight with no usable stack.
+        #[cfg(target_os = "ios")]
+        native_diagnostics::start(&app.package_info().version.to_string());
         if let Some(window) = app.get_webview_window(windows::MAIN_WINDOW_LABEL) {
             window.show()?;
         }
-        spike_mobile::run_self_check(app.handle());
         Ok(())
     });
 

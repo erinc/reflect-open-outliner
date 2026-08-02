@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.8.0-beta.6](https://github.com/team-reflect/reflect-open/compare/v0.8.0-beta.5...v0.8.0-beta.6) (2026-08-01)
+
+
+### Bug Fixes
+
+* **ios:** switch Sentry to the dynamic SPM product so TestFlight uploads pass ([#1018](https://github.com/team-reflect/reflect-open/issues/1018)) ([4658424](https://github.com/team-reflect/reflect-open/commit/4658424437255750df9dff34d4d8bd564851fa31))
+
+## [0.8.0-beta.5](https://github.com/team-reflect/reflect-open/compare/v0.8.0-beta.4...v0.8.0-beta.5) (2026-08-01)
+
+
+### Bug Fixes
+
+* compute "Similar notes" once per note per session instead of on every index change ([#1017](https://github.com/team-reflect/reflect-open/issues/1017)) ([a433408](https://github.com/team-reflect/reflect-open/commit/a4334089c4cc00e6d4217e882d87d6bfe04ab73c))
+* cut iCloud sync's battery cost on large graphs ([#963](https://github.com/team-reflect/reflect-open/issues/963)) ([a81deef](https://github.com/team-reflect/reflect-open/commit/a81deefc47f25b8e9a330002f33701929b8fef0f))
+* **ios:** remove redundant whole-graph work on every iCloud open ([#1010](https://github.com/team-reflect/reflect-open/issues/1010)) ([81ebd9a](https://github.com/team-reflect/reflect-open/commit/81ebd9ac97a0da53040c30671a5979693fbd51b5))
+* **ios:** stop the brief input freeze right after the app opens ([#1009](https://github.com/team-reflect/reflect-open/issues/1009)) ([93f7a5f](https://github.com/team-reflect/reflect-open/commit/93f7a5f76ecf3790d8d687402c9d99d60423a5eb))
+* reduce battery drain from mobile scrolling and idle polling ([#962](https://github.com/team-reflect/reflect-open/issues/962)) ([cc5e3eb](https://github.com/team-reflect/reflect-open/commit/cc5e3ebaaeaa0d0fd68adc3e93a74cd340de96e2))
+* reduce CPU usage at app startup ([#1008](https://github.com/team-reflect/reflect-open/issues/1008)) ([eac6258](https://github.com/team-reflect/reflect-open/commit/eac6258adad850a40abaf29a13a83f3302cbbaec))
+
+## [0.8.0-beta.4](https://github.com/team-reflect/reflect-open/compare/v0.8.0-beta.3...v0.8.0-beta.4) (2026-08-01)
+
+
+### Bug Fixes
+
+* symbolicate native iOS crashes from TestFlight builds ([#1012](https://github.com/team-reflect/reflect-open/issues/1012)) ([08b1ca1](https://github.com/team-reflect/reflect-open/commit/08b1ca1f6deb84dbe5bb91b34bb0274c39f0c46b))
+
+## [0.8.0-beta.3](https://github.com/team-reflect/reflect-open/compare/v0.8.0-beta.2...v0.8.0-beta.3) (2026-07-31)
+
+
+### Features
+
+* **mobile:** add an image button to the keyboard toolbar ([#1001](https://github.com/team-reflect/reflect-open/issues/1001)) ([afceb0b](https://github.com/team-reflect/reflect-open/commit/afceb0be58bb61e51431bcb52e3f7f4df54edd6b))
+
+
+### Bug Fixes
+
+* update meowdown to ^0.63.1 ([#1005](https://github.com/team-reflect/reflect-open/issues/1005)) ([0491123](https://github.com/team-reflect/reflect-open/commit/0491123f21596fbda50be71f5803c41a9f7d5feb))
+
 ## [0.8.0-beta.2](https://github.com/team-reflect/reflect-open/compare/v0.8.0-beta.1...v0.8.0-beta.2) (2026-07-30)
 
 
