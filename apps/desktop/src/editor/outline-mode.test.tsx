@@ -146,13 +146,11 @@ describe('NoteEditor outline mode', () => {
   it('folds a bullet on plain click and focuses it on Command-click', async () => {
     await renderOutline('- parent\n  - child\n- sibling')
     const parent = editorRoot.element().querySelector<HTMLElement>('.prosemirror-flat-list')
-    const parentMarker = parent?.querySelector<HTMLElement>(':scope > .list-marker')
-    if (
-      parent === null ||
-      parent === undefined ||
-      parentMarker === null ||
-      parentMarker === undefined
-    ) {
+    if (parent === null) {
+      throw new Error('parent marker was not rendered')
+    }
+    const parentMarker = parent.querySelector<HTMLElement>(':scope > .list-marker')
+    if (parentMarker === null) {
       throw new Error('parent marker was not rendered')
     }
 

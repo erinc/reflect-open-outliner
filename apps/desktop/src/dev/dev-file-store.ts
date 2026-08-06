@@ -44,11 +44,11 @@ function byteSize(contents: string): number {
 export function createDevFileStore(seed: Record<string, string>): DevFileStore {
   const files = new Map<string, DevFile>()
   const seedEntries = Object.entries(seed)
-  seedEntries.forEach(([path, contents], position) => {
+  for (const [position, [path, contents]] of seedEntries.entries()) {
     // Older seeds get older stamps, one minute apart, ending "now".
     const modifiedMs = Date.now() - (seedEntries.length - position) * 60_000
     files.set(path, { contents, modifiedMs })
-  })
+  }
 
   const toMeta = ([path, file]: [string, DevFile]): FileMeta => ({
     path,
@@ -57,10 +57,10 @@ export function createDevFileStore(seed: Record<string, string>): DevFileStore {
   })
 
   return {
-    list: () => [...files.entries()].filter(([path]) => isNotePath(path)).map(toMeta),
+    list: () => [...files].filter(([path]) => isNotePath(path)).map(toMeta),
     listDir: (dir) => {
       const prefix = dir.endsWith('/') ? dir : `${dir}/`
-      return [...files.entries()].filter(([path]) => path.startsWith(prefix)).map(toMeta)
+      return [...files].filter(([path]) => path.startsWith(prefix)).map(toMeta)
     },
     read: (path) => files.get(path)?.contents ?? null,
     exists: (path) => files.has(path),

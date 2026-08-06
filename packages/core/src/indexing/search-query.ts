@@ -27,7 +27,7 @@ export function buildFtsMatch(query: string): string | null {
   if (terms.length === 0) {
     return null
   }
-  return terms.map((term) => `"${term.replace(/"/g, '""')}"`).join(' ')
+  return terms.map((term) => `"${term.replaceAll('"', '""')}"`).join(' ')
 }
 
 /**

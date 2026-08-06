@@ -1,8 +1,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
-import { isNotePath, mayContainNotes } from '../graph/paths'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { isNotePath, mayContainNotes } from '../graph/paths'
 import { foldKey, parseNote } from '../markdown'
 import { hashContent } from './hash'
 import { buildIndexedNote } from './indexed-note'
@@ -20,15 +19,7 @@ import { buildFtsMatch } from './search-query'
  * regenerated file forces the Rust mirror to follow in the same PR.
  */
 
-const corpusDir = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  '..',
-  '..',
-  'fixtures',
-  'parity',
-)
+const corpusDir = join(import.meta.dirname, '..', '..', '..', '..', 'fixtures', 'parity')
 const expectedFile = join(corpusDir, 'expected.json')
 
 /** Expectations for one fixture note — the derivations both sides must agree on. */

@@ -80,8 +80,8 @@ export function previewSnippet(
   title: string,
   maxLength = PREVIEW_MAX_LENGTH,
 ): string {
-  const collapsed = text.replace(/\s+/g, ' ').trim()
-  const foldedTitle = title.replace(/\s+/g, ' ').trim()
+  const collapsed = text.replaceAll(/\s+/g, ' ').trim()
+  const foldedTitle = title.replaceAll(/\s+/g, ' ').trim()
   let body = collapsed
   if (foldedTitle !== '') {
     if (body === foldedTitle) {

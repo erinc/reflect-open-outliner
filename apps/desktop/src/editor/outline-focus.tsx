@@ -145,7 +145,7 @@ function breadcrumbDom(state: EditorState, position: number): HTMLElement {
   root.title = 'Show all blocks'
   nav.append(root)
 
-  entries.forEach((entry, index) => {
+  for (const [index, entry] of entries.entries()) {
     const separator = document.createElement('span')
     separator.className = 'reflect-outline-breadcrumb-separator'
     separator.setAttribute('aria-hidden', 'true')
@@ -164,7 +164,7 @@ function breadcrumbDom(state: EditorState, position: number): HTMLElement {
       crumb.setAttribute('aria-current', 'page')
     }
     nav.append(crumb)
-  })
+  }
   return nav
 }
 
