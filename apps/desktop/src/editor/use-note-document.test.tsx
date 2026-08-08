@@ -100,7 +100,7 @@ function gateInvokes(match: (command: string, args: Record<string, unknown>) => 
     if (match(command, args)) {
       await gate
     }
-    return ungated?.(command, args)
+    return await ungated?.(command, args)
   })
   return release
 }
@@ -473,7 +473,9 @@ describe('useNoteDocument', () => {
   it('the pane adopts its retargeted session when the route follows a move (Plan 17)', async () => {
     vi.useFakeTimers()
     const moves: Array<[string, string]> = []
-    const unsubscribe = onNoteMoved((from, to) => moves.push([from, to]))
+    const unsubscribe = onNoteMoved((from, to) => {
+      moves.push([from, to])
+    })
     try {
       const files: Record<string, string> = { 'notes/a.md': managedNote('# Old Title\n') }
       installGraphFake({ files })
@@ -813,7 +815,7 @@ describe('useNoteDocument', () => {
         if (command === 'note_write') {
           disk = (args as { contents: string }).contents
           writes.push(disk)
-          return new Promise<null>((resolve) => {
+          return await new Promise<null>((resolve) => {
             resolveWrite = () => resolve(null)
           })
         }
@@ -857,7 +859,7 @@ describe('useNoteDocument', () => {
           writes.push(disk)
           writeCount += 1
           if (writeCount === 1) {
-            return new Promise<null>((resolve) => {
+            return await new Promise<null>((resolve) => {
               resolveWrite = () => resolve(null)
             })
           }

@@ -1,7 +1,7 @@
 import {
   createContext,
   useCallback,
-  useContext,
+  use,
   useEffect,
   useMemo,
   useRef,
@@ -320,12 +320,12 @@ export function RouterProvider({
     savedScroll,
   ])
 
-  return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>
+  return <RouterContext value={value}>{children}</RouterContext>
 }
 
 /** Access the current route + navigation. Use within a RouterProvider. */
 export function useRouter(): RouterValue {
-  const context = useContext(RouterContext)
+  const context = use(RouterContext)
   if (!context) {
     throw new Error('useRouter must be used within a RouterProvider')
   }
@@ -338,7 +338,7 @@ export function useRouter(): RouterValue {
  * standalone component harnesses remain valid outside a full app router.
  */
 export function useNavigationRevision(): (() => number) | null {
-  return useContext(RouterContext)?.navigationRevision ?? null
+  return use(RouterContext)?.navigationRevision ?? null
 }
 
 interface RouterFreezeProps {
@@ -365,7 +365,5 @@ export function RouterFreeze({ frozen, children }: RouterFreezeProps): ReactElem
   if (!frozen && captured !== live) {
     setCaptured(live)
   }
-  return (
-    <RouterContext.Provider value={frozen ? captured : live}>{children}</RouterContext.Provider>
-  )
+  return <RouterContext value={frozen ? captured : live}>{children}</RouterContext>
 }

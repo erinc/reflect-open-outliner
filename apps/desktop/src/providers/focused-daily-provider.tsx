@@ -1,6 +1,6 @@
 import {
   createContext,
-  useContext,
+  use,
   useLayoutEffect,
   useState,
   type ReactElement,
@@ -39,22 +39,20 @@ const SetFocusedDailyDateContext = createContext<(date: string | null) => void>(
 export function FocusedDailyProvider({ children }: { children: ReactNode }): ReactElement {
   const [focusedDate, setFocusedDate] = useState<string | null>(null)
   return (
-    <SetFocusedDailyDateContext.Provider value={setFocusedDate}>
-      <FocusedDailyDateContext.Provider value={focusedDate}>
-        {children}
-      </FocusedDailyDateContext.Provider>
-    </SetFocusedDailyDateContext.Provider>
+    <SetFocusedDailyDateContext value={setFocusedDate}>
+      <FocusedDailyDateContext value={focusedDate}>{children}</FocusedDailyDateContext>
+    </SetFocusedDailyDateContext>
   )
 }
 
 /** The focused day, or `null` when nothing in the stream is focused. */
 export function useFocusedDailyDate(): string | null {
-  return useContext(FocusedDailyDateContext)
+  return use(FocusedDailyDateContext)
 }
 
 /** Record (or clear, with `null`) the focused day. No-op without a provider. */
 export function useSetFocusedDailyDate(): (date: string | null) => void {
-  return useContext(SetFocusedDailyDateContext)
+  return use(SetFocusedDailyDateContext)
 }
 
 /**

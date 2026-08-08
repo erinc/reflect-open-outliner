@@ -1,7 +1,7 @@
 import {
   createContext,
   useCallback,
-  useContext,
+  use,
   useMemo,
   useRef,
   useState,
@@ -310,12 +310,12 @@ export function MobileAudioMemoProvider({
     ],
   )
 
-  return <MobileAudioMemoContext.Provider value={value}>{children}</MobileAudioMemoContext.Provider>
+  return <MobileAudioMemoContext value={value}>{children}</MobileAudioMemoContext>
 }
 
 /** Access the mobile audio-memo surface. Use within MobileAudioMemoProvider. */
 export function useMobileAudioMemo(): MobileAudioMemoContextValue {
-  const context = useContext(MobileAudioMemoContext)
+  const context = use(MobileAudioMemoContext)
   if (!context) {
     throw new Error('useMobileAudioMemo must be used within a MobileAudioMemoProvider')
   }

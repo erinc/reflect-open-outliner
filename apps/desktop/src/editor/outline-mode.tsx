@@ -284,7 +284,9 @@ export const dedentNestedOutlineItemBackward: Command = (state, dispatch, view) 
       parentChildren.push(parentItem.child(childIndex))
     }
     const outdentedChildren: ProseMirrorNode[] = []
-    context.node.forEach((child) => outdentedChildren.push(child))
+    context.node.forEach((child) => {
+      outdentedChildren.push(child)
+    })
     for (let childIndex = index + 1; childIndex < parentItem.childCount; childIndex += 1) {
       outdentedChildren.push(parentItem.child(childIndex))
     }

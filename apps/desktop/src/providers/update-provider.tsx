@@ -1,6 +1,6 @@
 import {
   createContext,
-  useContext,
+  use,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -86,12 +86,12 @@ export function UpdateProvider({ children, autoCheck }: UpdateProviderProps): Re
     [controller, state, supported],
   )
 
-  return <UpdateContext.Provider value={value}>{children}</UpdateContext.Provider>
+  return <UpdateContext value={value}>{children}</UpdateContext>
 }
 
 /** Update state + actions; must be used under an {@link UpdateProvider}. */
 export function useUpdate(): UpdateContextValue {
-  const value = useContext(UpdateContext)
+  const value = use(UpdateContext)
   if (value === null) {
     throw new Error('useUpdate must be used within an UpdateProvider')
   }

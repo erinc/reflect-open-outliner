@@ -1,7 +1,7 @@
 import {
   createContext,
   useCallback,
-  useContext,
+  use,
   useEffect,
   useMemo,
   useRef,
@@ -152,16 +152,16 @@ export function V1ImportProvider({ graph, children }: V1ImportProviderProps): Re
   )
 
   return (
-    <V1ImportContext.Provider value={value}>
+    <V1ImportContext value={value}>
       {children}
       <V1ImportDialog state={state} onCancel={cancelImport} onDismiss={dismiss} />
-    </V1ImportContext.Provider>
+    </V1ImportContext>
   )
 }
 
 /** The workspace's Reflect V1 import (state + controls). */
 export function useV1Import(): V1ImportContextValue {
-  const context = useContext(V1ImportContext)
+  const context = use(V1ImportContext)
   if (context === null) {
     throw new Error('useV1Import must be used within V1ImportProvider')
   }

@@ -31,6 +31,7 @@ dist-ssr
 !apps/desktop/.env.outliner
 
 # Monorepo / build caches
+.pnpm-store/
 .turbo
 /target
 *.tsbuildinfo

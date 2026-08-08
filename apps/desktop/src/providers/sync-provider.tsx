@@ -1,6 +1,6 @@
 import {
   createContext,
-  useContext,
+  use,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -112,12 +112,12 @@ export function SyncProvider({ graph, children }: SyncProviderProps): ReactEleme
     }
   }, [controller, backup])
 
-  return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>
+  return <SyncContext value={value}>{children}</SyncContext>
 }
 
 /** Backup state + actions; must be used under a {@link SyncProvider}. */
 export function useSync(): SyncContextValue {
-  const value = useContext(SyncContext)
+  const value = use(SyncContext)
   if (value === null) {
     throw new Error('useSync must be used within a SyncProvider')
   }
@@ -131,5 +131,5 @@ export function useSync(): SyncContextValue {
  * their sync rows instead of crashing.
  */
 export function useSyncContext(): SyncContextValue | null {
-  return useContext(SyncContext)
+  return use(SyncContext)
 }

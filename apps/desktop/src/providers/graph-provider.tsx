@@ -1,7 +1,7 @@
 import {
   createContext,
   useCallback,
-  useContext,
+  use,
   useEffect,
   useMemo,
   useRef,
@@ -388,7 +388,7 @@ export function GraphProvider({
         setError(errorMessage(err))
         return false
       }
-      return openRecent(root)
+      return await openRecent(root)
     },
     [openRecent],
   )
@@ -560,12 +560,12 @@ export function GraphProvider({
     ],
   )
 
-  return <GraphContext.Provider value={value}>{children}</GraphContext.Provider>
+  return <GraphContext value={value}>{children}</GraphContext>
 }
 
 /** Access the active graph + open/choose actions. Use within a GraphProvider. */
 export function useGraph(): GraphContextValue {
-  const context = useContext(GraphContext)
+  const context = use(GraphContext)
   if (!context) {
     throw new Error('useGraph must be used within a GraphProvider')
   }

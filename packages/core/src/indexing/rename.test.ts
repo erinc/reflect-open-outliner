@@ -132,7 +132,9 @@ describe('rewriteLinksForTitleChange', () => {
       from: 'Old',
       to: 'New',
       io,
-      onProgress: (done, total) => progress.push([done, total]),
+      onProgress: (done, total) => {
+        progress.push([done, total])
+      },
     })
     expect(result.failed).toEqual(['notes/gone.md'])
     expect(result.rewritten).toEqual(['notes/ok.md'])
@@ -409,7 +411,7 @@ describe('rewriteLinksForTitleChange stable-target displays', () => {
     const resolve = io.resolve
     io.resolve = async (target) => {
       resolveCalls.push(target)
-      return resolve(target)
+      return await resolve(target)
     }
 
     await rewriteLinksForTitleChange({
