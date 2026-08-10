@@ -9,15 +9,10 @@ import {
 } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Archive, CalendarClock, List, Search } from 'lucide-react'
-import {
-  getCompletedTasks,
-  getOpenTasks,
-  hasBridge,
-  type OpenTask,
-  type TaskGroup,
-} from '@reflect/core'
+import { getCompletedTasks, getOpenTasks, type OpenTask, type TaskGroup } from '@reflect/core'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useBridgeReady } from '@/hooks/use-bridge-ready'
 import { useNoteLinkNavigation } from '@/hooks/use-note-link-navigation'
 import { useRecentlyCompleted } from '@/lib/tasks/recently-completed'
 import { sameTask, taskKey } from '@/lib/tasks/task-identity'
@@ -32,13 +27,14 @@ import { useTaskSelection } from '@/lib/tasks/use-task-selection'
 import { completedTasksQueryKey, tasksQueryKey } from '@/lib/tasks/tasks-query'
 import { useScrollRestoration } from '@/lib/use-scroll-restoration'
 import { useToday } from '@/lib/use-today'
-import type { NewWindowClickEvent } from '@/lib/windows/open-in-new-window'
+import type { ModClickEvent } from '@/lib/windows/open-in-new-window'
 import { useGraph } from '@/providers/graph-provider'
 import { routeForPath } from '@/routing/route'
 import { TaskFiltersMenu } from './task-filters-menu'
 import { TaskGroupSection } from './task-group-section'
 import { TaskScheduleCalendar } from './task-schedule-calendar'
 import { TaskToolbarCountBadge } from './task-toolbar-count-badge'
+import { isModEvent } from '@meowdown/core'
 
 /** The selected task that owns keyboard focus: the cursor/anchor, else the first row left selected. */
 function focusedSelectedKey(
@@ -82,7 +78,8 @@ export function TasksScreen(): ReactElement {
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
-  const enabled = hasBridge() && graph !== null
+  const bridgeReady = useBridgeReady()
+  const enabled = bridgeReady && graph !== null
 
   const { data: open, isError: openFailed } = useQuery({
     queryKey: tasksQueryKey(graph?.root),
@@ -211,7 +208,11 @@ export function TasksScreen(): ReactElement {
     }
   }, [actions, selection, selectedTasks])
   const openNote = useCallback(
-    (path: string, event?: NewWindowClickEvent) => navigateNoteLink(routeForPath(path), event),
+    (path: string, event?: ModClickEvent) =>
+      navigateNoteLink({
+        target: routeForPath(path),
+        openInNewWindow: event !== undefined && isModEvent(event),
+      }),
     [navigateNoteLink],
   )
   useTaskKeyboard({

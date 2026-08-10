@@ -173,13 +173,13 @@ interface NoteEditorProps {
    * Mod-Enter key press that followed the link) — handlers read its
    * modifiers, e.g. ⌘-click opens the target in a new window.
    */
-  onWikiLinkClick?: (target: string, event?: MouseEvent | KeyboardEvent) => void
+  onWikiLinkClick?: (options: { target: string; openInNewWindow: boolean }) => void
   /**
    * Click on a rendered Markdown link whose href is graph-local (scheme-less
    * and not an asset): a note link like `[Plan](./Plan.md)`. Receives the
    * authored href; the handler owns source-relative resolution.
    */
-  onNoteLinkClick?: (href: string, event: MouseEvent | KeyboardEvent) => void
+  onNoteLinkClick?: (options: { href: string; openInNewWindow: boolean }) => void
   /**
    * Resolve the passive body of Meowdown's editor-scoped wiki-link hover
    * card. Resolving `null` (missing, ambiguous, or unavailable targets)
@@ -338,8 +338,8 @@ export function NoteEditor({
   )
 
   const handleWikilinkClick = useCallback(
-    (payload: { target: string; event: MouseEvent | KeyboardEvent }) =>
-      onWikiLinkClickRef.current?.(payload.target, payload.event),
+    (payload: { target: string; event: MouseEvent | KeyboardEvent; mod: boolean }) =>
+      onWikiLinkClickRef.current?.({ target: payload.target, openInNewWindow: payload.mod }),
     [],
   )
   const handleTagClick = useCallback(
@@ -357,7 +357,7 @@ export function NoteEditor({
   const handleLinkClick = useCallback(
     // The event may also be the Mod-Enter key press that followed the link
     // (meowdown ≥0.33).
-    ({ href, event }: { href: string; event: MouseEvent | KeyboardEvent }) => {
+    ({ href, mod }: { href: string; event: MouseEvent | KeyboardEvent; mod: boolean }) => {
       // A graph-relative `assets/…` href (an attachment link) opens through
       // the generation-pinned asset command, never the URL opener — which
       // would receive a meaningless relative string.
@@ -370,17 +370,17 @@ export function NoteEditor({
       }
       // A `reflect://` link routes through the in-app deep-link pipeline —
       // the OS opener would deny the scheme (and a round-trip could land on
-      // another installed flavor). ⌘-click sends an *addressing* link to a
-      // new window instead; a declined open (capture link, browser dev)
+      // another installed flavor). ⌘-click or a spare-`mod` keyboard follow sends an
+      // *addressing* link to a new window instead; a declined open (capture link, browser dev)
       // degrades to the normal dispatch.
       if (isDeepLinkUrl(href)) {
-        followDeepLink(href, event)
+        followDeepLink({ href, openInNewWindow: mod })
         return
       }
       if (!isOpenableExternalUrl(href)) {
         // A scheme-less local href is a note link; the host resolves it
         // against this note's own directory.
-        onNoteLinkClickRef.current?.(href, event)
+        onNoteLinkClickRef.current?.({ href, openInNewWindow: mod })
         return
       }
       void openUrl(href).catch((cause) => {
@@ -393,7 +393,7 @@ export function NoteEditor({
   // link click: `assets/…` through the asset opener, anything else through
   // the deep-link/URL path.
   const handleFileClick: FileClickHandler = useCallback(
-    ({ href, event }) => handleLinkClick({ href, event }),
+    ({ href, event, mod }) => handleLinkClick({ href, event, mod }),
     [handleLinkClick],
   )
   const handleResolveFileInfo: FileInfoResolver = useCallback(
@@ -404,7 +404,15 @@ export function NoteEditor({
     // Touch surfaces deliver the tap's `touchend` instead of a click —
     // meowdown cancels it so iOS WebKit can't focus the editor (and raise
     // the keyboard) under the opening lightbox.
-    ({ src, alt, event }: { src: string; alt: string; event: MouseEvent | TouchEvent }) => {
+    ({
+      src,
+      alt,
+      event,
+    }: {
+      src: string
+      alt: string
+      event: MouseEvent | TouchEvent | KeyboardEvent
+    }) => {
       const displayUrl = resolveImageUrlRef.current?.(src) ?? null
       if (displayUrl === null) {
         return

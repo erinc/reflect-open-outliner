@@ -24,7 +24,7 @@ interface MarkdownPreviewProps {
    * inert chips (the palette preview's behavior). `event` carries the
    * originating click so handlers can honor ⌘-click (open in new window).
    */
-  onWikiLinkClick?: (target: string, event?: MouseEvent | KeyboardEvent) => void
+  onWikiLinkClick?: (options: { target: string; openInNewWindow: boolean }) => void
   /**
    * Whether rendered links, images, and task checkboxes can be activated
    * (default true). A passive preview renders no anchors, focusable controls,
@@ -64,8 +64,8 @@ export function MarkdownPreview({
     [],
   )
   const onWikilinkClickStable = useCallback(
-    (payload: { target: string; event: MouseEvent | KeyboardEvent }) =>
-      navigateRef.current?.(payload.target, payload.event),
+    (payload: { target: string; event: MouseEvent | KeyboardEvent; mod: boolean }) =>
+      navigateRef.current?.({ target: payload.target, openInNewWindow: payload.mod }),
     [],
   )
 

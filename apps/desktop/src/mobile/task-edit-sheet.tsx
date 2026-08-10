@@ -165,9 +165,9 @@ export function MobileTaskEditSheet({
 
   // A link tapped *inside* the draft navigates like "Open note": commit the
   // draft first, then resolve the target (the shared editor hooks).
-  const openWikiLink = (target: string): void => {
+  const openWikiLink = ({ target }: { target: string }): void => {
     closeNavigate()
-    navigateWikiLink(target)
+    navigateWikiLink({ target, openInNewWindow: false })
   }
 
   const openTag = (tag: string): void => {
@@ -204,18 +204,17 @@ export function MobileTaskEditSheet({
         aria-label="Edit task"
         // On the "+"-add path the editor takes focus instead of the sheet
         // container, so typing can start immediately.
-        onOpenAutoFocus={(event) => {
-          if (autoFocusEditor) {
-            event.preventDefault()
-            editorRef.current?.focus()
+        initialFocus={() => {
+          if (!autoFocusEditor) {
+            return true
           }
+          editorRef.current?.focus()
+          return false
         }}
       >
         <DrawerTitle className="sr-only">Edit task</DrawerTitle>
-        {/* vaul must not turn a drag inside the editor (text selection) into a
-            sheet drag. */}
         <div
-          data-vaul-no-drag
+          data-base-ui-swipe-ignore
           className="rounded-md border border-border bg-surface px-3 py-2 focus-within:ring-1 focus-within:ring-accent"
         >
           <NoteEditor

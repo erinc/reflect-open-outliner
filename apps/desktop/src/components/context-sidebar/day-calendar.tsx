@@ -1,10 +1,11 @@
 import { useMemo, useState, type ReactElement } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { dailyDatesInRange, hasBridge, type WeekStartDay } from '@reflect/core'
+import { dailyDatesInRange, type WeekStartDay } from '@reflect/core'
 import { CalendarIcon } from '@/components/icons/calendar-icon'
 import { ChevronLeftIcon } from '@/components/icons/chevron-left-icon'
 import { ChevronRightIcon } from '@/components/icons/chevron-right-icon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useBridgeReady } from '@/hooks/use-bridge-ready'
 import { useNoteLinkNavigation } from '@/hooks/use-note-link-navigation'
 import { formatDayLabel } from '@/lib/dates'
 import { addMonths, buildMonthGrid, monthLabel, monthOf, weekdayLabels } from '@/lib/month-grid'
@@ -13,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { useGraph } from '@/providers/graph-provider'
 import { useSettings } from '@/providers/settings-provider'
 import { useRouter } from '@/routing/router'
+import { isModEvent } from '@meowdown/core'
 
 interface DayCalendarProps {
   /** The day the sidebar describes (highlighted as selected). */
@@ -56,10 +58,11 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
   }
 
   const grid = buildMonthGrid(month, weekStartsOn)
+  const bridgeReady = useBridgeReady()
   const { data: notedDates } = useQuery({
     queryKey: [INDEX_QUERY_SCOPE, graph?.root, 'dailyDates', grid.start, grid.end],
     queryFn: () => dailyDatesInRange(grid.start, grid.end),
-    enabled: hasBridge() && graph !== null,
+    enabled: bridgeReady && graph !== null,
   })
   // The sidebar re-renders as the focused day scrolls through the stream; with
   // the query result reference-stable (structural sharing), rebuild the lookup
@@ -129,7 +132,12 @@ export function DayCalendar({ selectedDate, today }: DayCalendarProps): ReactEle
                     aria-label={formatDayLabel(cell.date, settings.dateFormat)}
                     aria-current={isToday ? 'date' : undefined}
                     aria-pressed={isSelected}
-                    onClick={(event) => navigateNoteLink({ kind: 'daily', date: cell.date }, event)}
+                    onClick={(event) =>
+                      navigateNoteLink({
+                        target: { kind: 'daily', date: cell.date },
+                        openInNewWindow: isModEvent(event),
+                      })
+                    }
                     className={cn(
                       'relative cursor-default py-1.5 text-xs',
                       // Today stays fully visible even as an adjacent-month
