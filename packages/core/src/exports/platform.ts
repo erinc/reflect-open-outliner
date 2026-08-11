@@ -310,3 +310,12 @@ export {
   type PersonContactResolution,
   type PersonResolution,
 } from '../contacts/person'
+export {
+  IAP_PRODUCT_IDS,
+  iapGetProducts,
+  iapPurchase,
+  iapRestorePurchases,
+  iapIsOwned,
+  subscribeIapPurchaseUpdated,
+  type IapProduct,
+} from '../ipc/iap-plugin'

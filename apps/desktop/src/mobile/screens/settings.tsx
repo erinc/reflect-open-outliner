@@ -1,9 +1,10 @@
 import { useId, useState, type ReactElement } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   aiProvider,
   aiProviderRequiresApiKey,
   errorMessage,
+  iapRestorePurchases,
   listNotes,
   normalizeChatSystemPrompt,
   type AiPrompt,
@@ -21,9 +22,9 @@ import { INDEX_QUERY_SCOPE } from '@/lib/query-client'
 import { AddAiProviderDrawer } from '@/mobile/add-ai-provider-drawer'
 import { AiPromptDrawer } from '@/mobile/ai-prompt-drawer'
 import { AiProviderActionsDrawer } from '@/mobile/ai-provider-actions-drawer'
-import { PRIVACY_POLICY_URL } from '@/mobile/ai-provider-consent'
 import { ChatSystemPromptDrawer } from '@/mobile/chat-system-prompt-drawer'
 import { ConnectGithubDrawer } from '@/mobile/connect-github-drawer'
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@/mobile/legal-urls'
 import { MobileScreenHeader } from '@/mobile/screen-header'
 import {
   SettingsActionRow,
@@ -34,6 +35,10 @@ import {
   SettingsValueRow,
   type SegmentedOption,
 } from '@/mobile/settings-list'
+import {
+  invalidateEntitlementQueries,
+  useActiveSubscription,
+} from '@/mobile/use-active-subscription'
 import { useMobileSyncStatus } from '@/mobile/use-sync-status'
 import { useGraph } from '@/providers/graph-provider'
 import { useSettings } from '@/providers/settings-provider'
@@ -71,7 +76,28 @@ const TEXT_SIZE_OPTIONS: readonly SegmentedOption<EditorTextSize>[] = [
  */
 export function MobileSettings(): ReactElement {
   const { back, canBack, navigate } = useRouter()
-  const { graph, mobileStorageKind } = useGraph()
+  const { graph, mobileStorageKind, platform } = useGraph()
+  const isIos = platform === 'ios'
+  const { activeSubscription } = useActiveSubscription()
+  const queryClient = useQueryClient()
+  const [restorePending, setRestorePending] = useState(false)
+  const [restoreMessage, setRestoreMessage] = useState<string | null>(null)
+
+  const handleRestore = async (): Promise<void> => {
+    setRestorePending(true)
+    setRestoreMessage(null)
+    try {
+      const count = await iapRestorePurchases()
+      await invalidateEntitlementQueries(queryClient)
+      if (count === 0) {
+        setRestoreMessage('No previous purchase found for this Apple account.')
+      }
+    } catch {
+      setRestoreMessage('Restore failed. Check your connection and try again.')
+    } finally {
+      setRestorePending(false)
+    }
+  }
   const { settings, updateSettings } = useSettings()
   const version = useAppVersion()
   const sync = useSyncContext()
@@ -281,6 +307,50 @@ export function MobileSettings(): ReactElement {
                   onPress={() => void disconnect()}
                 />
               ) : null}
+            </SettingsGroup>
+          ) : null}
+
+          {isIos ? (
+            <SettingsGroup header="Subscription" footer={restoreMessage}>
+              <SettingsValueRow
+                label="Plan"
+                value={
+                  activeSubscription === 'monthly'
+                    ? 'Reflect Pro Monthly'
+                    : activeSubscription === 'yearly'
+                      ? 'Reflect Pro Yearly'
+                      : 'Free'
+                }
+              />
+              {activeSubscription === null ? (
+                // Clearing the snooze flips useShouldShowPaywall back to
+                // 'show', so the gate in mobile-app.tsx replaces the app with
+                // the paywall immediately.
+                <SettingsActionRow
+                  label="Upgrade to Pro"
+                  onPress={() => updateSettings({ paywallSnoozeUntil: 0 })}
+                />
+              ) : (
+                <SettingsActionRow
+                  label="Manage Subscription"
+                  onPress={() => {
+                    void openUrl('https://apps.apple.com/account/subscriptions').catch(() => {})
+                  }}
+                />
+              )}
+              <SettingsActionRow
+                label="Restore Purchases"
+                pending={restorePending}
+                onPress={() => {
+                  void handleRestore()
+                }}
+              />
+              <SettingsActionRow
+                label="Terms of Use"
+                onPress={() => {
+                  void openUrl(TERMS_OF_USE_URL).catch(() => {})
+                }}
+              />
             </SettingsGroup>
           ) : null}
 
